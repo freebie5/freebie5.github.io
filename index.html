@@ -144,6 +144,235 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-基于http的长轮询简单实现" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/18/%E5%9F%BA%E4%BA%8Ehttp%E7%9A%84%E9%95%BF%E8%BD%AE%E8%AF%A2%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/">基于http的长轮询简单实现</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/18/%E5%9F%BA%E4%BA%8Ehttp%E7%9A%84%E9%95%BF%E8%BD%AE%E8%AF%A2%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/" class="archive-article-date">
+  	<time datetime="2020-07-18T14:06:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-18</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-需求场景"><a href="#1-需求场景" class="headerlink" title="1.需求场景"></a>1.需求场景</h2><p>公司最近有个开发任务，需要对接第三方接口，涉及到长轮询的，我简单描述一下需求：</p>
+<p>1.请求第三方的二维码凭证接口获取凭证qrCodeKey，用qrCodeKey作为参数生成链接，例如：</p>
+<p><a href="http://www.freebie5.com?qrCodeKey=123456" target="_blank" rel="noopener">http://www.freebie5.com?qrCodeKey=123456</a></p>
+<p>然后，把链接作为内容，生成二维码</p>
+<p>2.用户手机扫描二维码访问链接，进行授权</p>
+<p>3.如果用户授权，那么第三方会把该用户的授权信息推送给我的后台接口</p>
+<p>4.如果后台接收到授权信息，那么前端页面立即跳转，实现授权登录</p>
+<h2 id="2-功能细化"><a href="#2-功能细化" class="headerlink" title="2.功能细化"></a>2.功能细化</h2><p>按照上面的需求描述，我把功能细化为3个接口：</p>
+<p>1.生成二维码的接口</p>
+<p>2.提供给第三方调用的接收授权信息的接口</p>
+<p>3.长轮询接口，当后台收到第三方推送的授权信息，前端页面马上就能跳转</p>
+<p>下面我重点说明一下长轮询接口，其他两个接口我简单说明一下</p>
+<h3 id="2-1生成二维码接口"><a href="#2-1生成二维码接口" class="headerlink" title="2.1生成二维码接口"></a>2.1生成二维码接口</h3><p>前端调用生成二维码接口，该接口就会生成一个业务流水号busNo作为入参调用第三方二维码凭证接口，获取二维码凭证qrCodeKey，用qrCodeKey作为参数生成链接，最后把链接作为二维码的内容，生成二维码，最后再把二维码的base64字符串和busNo返回给前端，前端直接展示二维码。同时记录一笔业务日志</p>
+<h3 id="2-2接收授权信息接口"><a href="#2-2接收授权信息接口" class="headerlink" title="2.2接收授权信息接口"></a>2.2接收授权信息接口</h3><p>第三方把授权信息json和busNo推送给我，我把busNo作为key，授权信息作为value，存储到redis缓存，同时记录一笔业务日志</p>
+<h3 id="2-3长轮询接口"><a href="#2-3长轮询接口" class="headerlink" title="2.3长轮询接口"></a>2.3长轮询接口</h3><p>前端页面调用长轮询接口，把busNo作为入参传给后台，后台以busNo作为key查询redis缓存，如果查询不到value，则暂停1秒后重试，如果超过15秒后还是没有value，则返回超时提示；如果查询到value，则直接返回授权信息</p>
+<h4 id="2-3-1前端demo"><a href="#2-3-1前端demo" class="headerlink" title="2.3.1前端demo"></a>2.3.1前端demo</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">longPolling</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> data = &#123;</span><br><span class="line">        busNo: <span class="string">"123456"</span>;<span class="comment">//业务流水号</span></span><br><span class="line">    &#125;;</span><br><span class="line">    $.ajax(&#123;</span><br><span class="line">        <span class="keyword">async</span>: <span class="literal">true</span>,<span class="comment">//异步</span></span><br><span class="line">        headers: headers,<span class="comment">//请求头</span></span><br><span class="line">        url: url,<span class="comment">//路径</span></span><br><span class="line">        type: <span class="string">'post'</span>,</span><br><span class="line">        dataType: <span class="string">'json'</span>,</span><br><span class="line">        data: data,</span><br><span class="line">        timeout: <span class="number">30000</span>,<span class="comment">//超时时间设定30秒</span></span><br><span class="line">        error: <span class="function">(<span class="params">Xhr, textStatus, thrownError</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="comment">//失败，重试</span></span><br><span class="line">            <span class="keyword">this</span>.longPolling();<span class="comment">//发生异常错误后再次发起请求</span></span><br><span class="line">        &#125;,</span><br><span class="line">        success: <span class="function">(<span class="params">response</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="comment">//成功) &#123;</span></span><br><span class="line">                <span class="comment">//跳转页面</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//超时，重试</span></span><br><span class="line">                <span class="keyword">this</span>.longPolling();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-2后台demo"><a href="#2-3-2后台demo" class="headerlink" title="2.3.2后台demo"></a>2.3.2后台demo</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TIMEOUT = <span class="number">15</span> * <span class="number">1000</span>;<span class="comment">//15秒</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> JSONObject <span class="title">getInfo</span><span class="params">(String busNo)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    JSONObject result = <span class="keyword">new</span> JSONObject();</span><br><span class="line">    <span class="comment">//授权信息</span></span><br><span class="line">    JSONObject infoResult = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">long</span> requestTime = System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">while</span> ((System.currentTimeMillis() - requestTime) &lt; TIMEOUT) &#123;</span><br><span class="line">        <span class="comment">//查询redis缓存，获取授权信息</span></span><br><span class="line">        infoResult = getInfoResultByRedis(busNo);</span><br><span class="line">        <span class="keyword">if</span> (infoResult!=<span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">break</span>;<span class="comment">// 跳出循环，返回数据</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);<span class="comment">// 休眠1秒</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (infoResult==<span class="keyword">null</span>) &#123;</span><br><span class="line">        result.put(<span class="string">"state"</span>, <span class="string">"0"</span>);</span><br><span class="line">        result.put(<span class="string">"msg"</span>, <span class="string">"超时"</span>);</span><br><span class="line">        result.put(<span class="string">"infoResult"</span>, <span class="keyword">new</span> JSONObject());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        result.put(<span class="string">"state"</span>, <span class="string">"1"</span>);</span><br><span class="line">        result.put(<span class="string">"msg"</span>, <span class="string">"成功"</span>);</span><br><span class="line">        result.put(<span class="string">"infoResult"</span>, infoResult);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">日常开发</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">js</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">java</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/日常开发记录//" class="article-tag-list-link color2">日常开发记录</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/18/%E5%9F%BA%E4%BA%8Ehttp%E7%9A%84%E9%95%BF%E8%BD%AE%E8%AF%A2%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-hexo入门教程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">hexo入门教程</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" class="archive-article-date">
+  	<time datetime="2020-07-18T13:33:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-18</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p>安装Git</p>
+<p>安装Node.js</p>
+<h2 id="安装hexo"><a href="#安装hexo" class="headerlink" title="安装hexo"></a>安装hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+
+<p>在指定目录初始化hexo</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo init D:\IdeaProjects\hexo-blog</span><br><span class="line">cd hexo-blog</span><br><span class="line">cnpm install</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动hexo"><a href="#启动hexo" class="headerlink" title="启动hexo"></a>启动hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+
+<h2 id="更换hexo主题"><a href="#更换hexo主题" class="headerlink" title="更换hexo主题"></a>更换hexo主题</h2><p>克隆yilia主题到theme/yilia目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;litten&#x2F;hexo-theme-yilia.git themes&#x2F;yilia</span><br></pre></td></tr></table></figure>
+
+<p>修改_config.yml文件，修改为yilia</p>
+<p><img src="/assets/blogImg/hexo入门教程_01.png" width="500"></p> 
+清除缓存，编译
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br></pre></td></tr></table></figure>
+
+<h2 id="新建文章"><a href="#新建文章" class="headerlink" title="新建文章"></a>新建文章</h2><p>新建的文章默认保存到source/_posts路径下</p>
+<p>可以使用Notepads编辑markdown文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo n “什么是微服务架构”</span><br></pre></td></tr></table></figure>
+
+<h2 id="部署到github"><a href="#部署到github" class="headerlink" title="部署到github"></a>部署到github</h2><p>登录github，新建仓库freebie5.github.io（仓库名称必须是：昵称.githut.io）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install --save hexo-deployer-git</span><br></pre></td></tr></table></figure>
+
+<p>配置_config.yml</p>
+<p><img src="/assets/blogImg/hexo入门教程_02.png" width="500"></p> 
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>访问<a href="https://freebie5.github.io/" target="_blank" rel="noopener">https://freebie5.github.io/</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">入门教程</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">hexo</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/hexo//" class="article-tag-list-link color5">hexo</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-CentOS7安装ZooKeeper" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -394,6 +623,26 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">中间件</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
               </li>
             
             <div class="clearfix"></div>
