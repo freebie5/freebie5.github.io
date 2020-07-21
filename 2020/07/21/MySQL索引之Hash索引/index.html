@@ -6,17 +6,25 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Category: ZooKeeper | 大香肠叔叔的码农日志</title>
+  <title>MySQL索引之Hash索引 | 大香肠叔叔的码农日志</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="java spring">
-<meta property="og:type" content="website">
-<meta property="og:title" content="大香肠叔叔的码农日志">
-<meta property="og:url" content="http://yoursite.com/categories/ZooKeeper/index.html">
+  <meta name="description" content="1.哈希表哈希表也叫散列表，利用哈希函数h，根据关键字K计算出哈希值，将关键字映射到哈希表T[0…m-1]的槽位上，如下图所示   哈希函数h有可能将两个不同的关键字映射到相同的位置，这叫做碰撞，在数据库中一般采用链接法来解决。在链接法中，将散列到同一槽位的元素放在一个链表中，如下图所示   2.MySQL哈希索引MySQL采用除法散列函数，冲突机制采用链接法。 3.哈希索引对比BTree索引Ha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL索引之Hash索引">
+<meta property="og:url" content="http://yoursite.com/2020/07/21/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BHash%E7%B4%A2%E5%BC%95/index.html">
 <meta property="og:site_name" content="大香肠叔叔的码农日志">
-<meta property="og:description" content="java spring">
+<meta property="og:description" content="1.哈希表哈希表也叫散列表，利用哈希函数h，根据关键字K计算出哈希值，将关键字映射到哈希表T[0…m-1]的槽位上，如下图所示   哈希函数h有可能将两个不同的关键字映射到相同的位置，这叫做碰撞，在数据库中一般采用链接法来解决。在链接法中，将散列到同一槽位的元素放在一个链表中，如下图所示   2.MySQL哈希索引MySQL采用除法散列函数，冲突机制采用链接法。 3.哈希索引对比BTree索引Ha">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BHash%E7%B4%A2%E5%BC%95_01.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BHash%E7%B4%A2%E5%BC%95_02.png">
+<meta property="article:published_time" content="2020-07-20T16:18:03.000Z">
+<meta property="article:modified_time" content="2020-07-21T14:37:22.218Z">
 <meta property="article:author" content="大香肠叔叔">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="哈希索引">
+<meta property="article:tag" content="哈希表">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/assets/blogImg/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BHash%E7%B4%A2%E5%BC%95_01.png">
   
   
     <link rel="icon" href="/favicon.png">
@@ -134,79 +142,200 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-MySQL索引之Hash索引" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/07/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/" class="archive-article-date">
-  	<time datetime="2020-07-09T14:47:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-09</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/">CentOS7安装ZooKeeper</a>
+    <h1 class="article-title" itemprop="name">
+      MySQL索引之Hash索引
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2020/07/21/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BHash%E7%B4%A2%E5%BC%95/" class="archive-article-date">
+  	<time datetime="2020-07-20T16:18:03.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-哈希表"><a href="#1-哈希表" class="headerlink" title="1.哈希表"></a>1.哈希表</h2><p>哈希表也叫散列表，利用哈希函数h，根据关键字K计算出哈希值，将关键字映射到哈希表T[0…m-1]的槽位上，如下图所示</p>
+<p><img src="/assets/blogImg/MySQL索引之Hash索引_01.png" width="500"></p>
+
+<p>哈希函数h有可能将两个不同的关键字映射到相同的位置，这叫做碰撞，在数据库中一般采用<strong>链接法</strong>来解决。在链接法中，将散列到同一槽位的元素放在一个链表中，如下图所示</p>
+<p><img src="/assets/blogImg/MySQL索引之Hash索引_02.png" width="500"></p>
+
+<h2 id="2-MySQL哈希索引"><a href="#2-MySQL哈希索引" class="headerlink" title="2.MySQL哈希索引"></a>2.MySQL哈希索引</h2><p>MySQL采用除法散列函数，冲突机制采用链接法。</p>
+<h2 id="3-哈希索引对比BTree索引"><a href="#3-哈希索引对比BTree索引" class="headerlink" title="3.哈希索引对比BTree索引"></a>3.哈希索引对比BTree索引</h2><p>Hash索引结构的特殊性，其检索效率非常高，索引的检索可以一次定位，不像B-Tree索引需要从根节点到枝节点，最后才能访问到页节点这样多次的IO访问，所以Hash索引的查询效率要远高于B-Tree索引。</p>
+<p>虽然Hash索引效率高，但是Hash索引本身由于其特殊性也带来了很多限制和弊端，主要有以下这些：</p>
+<h3 id="1-Hash索引仅仅能满足”-”-”IN”和”-lt-gt-”查询，不能使用范围查询。"><a href="#1-Hash索引仅仅能满足”-”-”IN”和”-lt-gt-”查询，不能使用范围查询。" class="headerlink" title="1.Hash索引仅仅能满足”=”,”IN”和”&lt;=&gt;”查询，不能使用范围查询。"></a>1.Hash索引仅仅能满足”=”,”IN”和”&lt;=&gt;”查询，不能使用范围查询。</h3><p>哈希索引只支持等值比较查询，包括<strong>＝、 IN 、&lt;=&gt;</strong> (注意&lt;&gt;和＜＝＞是不同的操作）。 也不支持任何范围查询，例如WHERE price &gt; 100。由于Hash索引比较的是进行Hash运算之后的Hash值，所以它只能用于等值的过滤，不能用于基于范围的过滤，<strong>因为经过相应的Hash算法处理之后的Hash值的大小关系，并不能保证和Hash运算前完全一样。</strong></p>
+<h3 id="2-Hash索引无法被用来避免数据的排序操作"><a href="#2-Hash索引无法被用来避免数据的排序操作" class="headerlink" title="2.Hash索引无法被用来避免数据的排序操作"></a>2.Hash索引无法被用来避免数据的排序操作</h3><p>由于Hash索引中存放的是经过Hash计算之后的Hash值，<strong>而且Hash值的大小关系并不一定和Hash运算前的键值完全一样</strong>，所以数据库无法利用索引的数据来避免任何排序运算;</p>
+<h3 id="3-Hash索引不能利用部分索引键查询"><a href="#3-Hash索引不能利用部分索引键查询" class="headerlink" title="3.Hash索引不能利用部分索引键查询"></a>3.Hash索引不能利用部分索引键查询</h3><p>对于组合索引，<strong>Hash索引在计算Hash值的时候是组合索引键合并后再一起计算Hash值，而不是单独计算Hash值</strong>，所以通过组合索引的前面一个或几个索引键进行查询的时候，Hash索引也无法被利用。</p>
+<h3 id="4-Hash索引在任何时候都不能避免表扫描"><a href="#4-Hash索引在任何时候都不能避免表扫描" class="headerlink" title="4.Hash索引在任何时候都不能避免表扫描"></a>4.Hash索引在任何时候都不能避免表扫描</h3><p>前面已经知道，<strong>Hash索引是将索引键通过Hash运算之后，将 Hash运算结果的Hash值和所对应的行指针信息存放于一个Hash表中</strong>，由于不同索引键存在相同Hash值，所以即使取满足某个Hash键值的数据的记录条数，也无法从Hash索引中直接完成查询，还是要通过访问表中的实际数据进行相应的比较，并得到相应的结果。</p>
+<h3 id="5-Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高"><a href="#5-Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高" class="headerlink" title="5.Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高"></a>5.<strong>Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高</strong></h3><p>对于选择性比较低的索引键，如果创建Hash索引，那么将会存在大量记录指针信息存于同一个Hash值相关联。这样要定位某一条记录时就会非常麻烦，会浪费多次表数据的访问，而造成整体性能低下。</p>
+<h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://www.cnblogs.com/igoodful/p/9361500.html" target="_blank" rel="noopener">https://www.cnblogs.com/igoodful/p/9361500.html</a></p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">ZooKeeper</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">下载安装</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">哈希索引</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">中间件</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">哈希表</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="/categories/ZooKeeper//" class="article-tag-list-link color5">ZooKeeper</a>
+        			<a href="/categories/MySQL相关//" class="article-tag-list-link color3">MySQL相关</a>
         		</li>
       		
 		</ul>
 	</div>
 
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2020/07/21/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BHash%E7%B4%A2%E5%BC%95/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2020/07/21/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BBTree%E7%B4%A2%E5%BC%95/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">MySQL索引之BTree索引</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -229,10 +358,10 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
-		isCategory: true,
+		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
 		root: "/",
