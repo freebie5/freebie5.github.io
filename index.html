@@ -376,6 +376,30 @@
 <p><img src="/assets/blogImg/MySQL索引之Hash索引_02.png" width="500"></p>
 
 <h2 id="2-MySQL哈希索引"><a href="#2-MySQL哈希索引" class="headerlink" title="2.MySQL哈希索引"></a>2.MySQL哈希索引</h2><p>MySQL采用除法散列函数，冲突机制采用链接法。</p>
+<h3 id="Tips："><a href="#Tips：" class="headerlink" title="Tips："></a>Tips：</h3><p>1.MySQL最常用存储引擎 InnoDB和MyISAM 都不支持Hash索引，它们默认的索引都是BTree索引。但是如果你在创建索引的时候定义其类型为 Hash，MySql 并不会报错，而且你通过 SHOW CREATE TABLE 查看该索引也是 Hash，只不过该索引实际上还是 B-Tree。</p>
+<p>实验说明：</p>
+<p>我们创建一个表test2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE &#96;test2&#96; (</span><br><span class="line">  &#96;id&#96; int(10) unsigned NOT NULL AUTO_INCREMENT,</span><br><span class="line">  &#96;name&#96; varchar(50) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (&#96;id&#96;)</span><br><span class="line">) ENGINE&#x3D;MyISAM DEFAULT CHARSET&#x3D;utf8</span><br></pre></td></tr></table></figure>
+
+<p>给test2添加一个Hash索引</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE test2 ADD INDEX nor_name USING HASH (name);</span><br></pre></td></tr></table></figure>
+
+<p>然后查看建表语句</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show create table test2;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE &#96;test2&#96; (</span><br><span class="line">  &#96;id&#96; int(10) unsigned NOT NULL AUTO_INCREMENT,</span><br><span class="line">  &#96;name&#96; varchar(50) DEFAULT NULL,</span><br><span class="line">  PRIMARY KEY (&#96;id&#96;),</span><br><span class="line">  UNIQUE KEY &#96;nor_name&#96; (&#96;name&#96;) USING HASH</span><br><span class="line">) ENGINE&#x3D;MyISAM DEFAULT CHARSET&#x3D;utf8</span><br></pre></td></tr></table></figure>
+
+<p>建表语句确实是HASH，但是事实上并不是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW INDEXES FROM test2;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/assets/blogImg/MySQL索引之Hash索引_03.png" width="1000"></p>
+
+<p>我们查看MySQL官网的存储引擎特性表可以看到InnoDB和MyISAM不支持Hash索引</p>
+<p><img src="/assets/blogImg/MySQL索引之Hash索引_04.png" width="700"></p>
+
+<p>虽然常见存储引擎并不支持 Hash 索引，但 InnoDB 有另一种实现方法：自适应哈希索引。InnoDB 存储引擎会监控对表上索引的查找，如果观察到建立哈希索引可以带来速度的提升，则建立哈希索引。</p>
+<p><img src="/assets/blogImg/MySQL索引之Hash索引_05.png" width="1000"></p>
+
 <h2 id="3-哈希索引对比BTree索引"><a href="#3-哈希索引对比BTree索引" class="headerlink" title="3.哈希索引对比BTree索引"></a>3.哈希索引对比BTree索引</h2><p>Hash索引结构的特殊性，其检索效率非常高，索引的检索可以一次定位，不像B-Tree索引需要从根节点到枝节点，最后才能访问到页节点这样多次的IO访问，所以Hash索引的查询效率要远高于B-Tree索引。</p>
 <p>虽然Hash索引效率高，但是Hash索引本身由于其特殊性也带来了很多限制和弊端，主要有以下这些：</p>
 <h3 id="1-Hash索引仅仅能满足”-”-”IN”和”-lt-gt-”查询，不能使用范围查询。"><a href="#1-Hash索引仅仅能满足”-”-”IN”和”-lt-gt-”查询，不能使用范围查询。" class="headerlink" title="1.Hash索引仅仅能满足”=”,”IN”和”&lt;=&gt;”查询，不能使用范围查询。"></a>1.Hash索引仅仅能满足”=”,”IN”和”&lt;=&gt;”查询，不能使用范围查询。</h3><p>哈希索引只支持等值比较查询，包括<strong>＝、 IN 、&lt;=&gt;</strong> (注意&lt;&gt;和＜＝＞是不同的操作）。 也不支持任何范围查询，例如WHERE price &gt; 100。由于Hash索引比较的是进行Hash运算之后的Hash值，所以它只能用于等值的过滤，不能用于基于范围的过滤，<strong>因为经过相应的Hash算法处理之后的Hash值的大小关系，并不能保证和Hash运算前完全一样。</strong></p>
@@ -384,6 +408,7 @@
 <h3 id="4-Hash索引在任何时候都不能避免表扫描"><a href="#4-Hash索引在任何时候都不能避免表扫描" class="headerlink" title="4.Hash索引在任何时候都不能避免表扫描"></a>4.Hash索引在任何时候都不能避免表扫描</h3><p>前面已经知道，<strong>Hash索引是将索引键通过Hash运算之后，将 Hash运算结果的Hash值和所对应的行指针信息存放于一个Hash表中</strong>，由于不同索引键存在相同Hash值，所以即使取满足某个Hash键值的数据的记录条数，也无法从Hash索引中直接完成查询，还是要通过访问表中的实际数据进行相应的比较，并得到相应的结果。</p>
 <h3 id="5-Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高"><a href="#5-Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高" class="headerlink" title="5.Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高"></a>5.<strong>Hash索引遇到大量Hash值相等的情况后性能并不一定就会比BTree索引高</strong></h3><p>对于选择性比较低的索引键，如果创建Hash索引，那么将会存在大量记录指针信息存于同一个Hash值相关联。这样要定位某一条记录时就会非常麻烦，会浪费多次表数据的访问，而造成整体性能低下。</p>
 <h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://www.cnblogs.com/igoodful/p/9361500.html" target="_blank" rel="noopener">https://www.cnblogs.com/igoodful/p/9361500.html</a></p>
+<p><a href="https://blog.csdn.net/hgguhff/article/details/84094166" target="_blank" rel="noopener">https://blog.csdn.net/hgguhff/article/details/84094166</a></p>
 
       
 
@@ -1313,18 +1338,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">哈希索引</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">哈希表</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
               </li>
              
@@ -1334,6 +1347,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">中间件</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">哈希索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">哈希表</a>
               </li>
              
               <li class="article-tag-list-item">
