@@ -136,6 +136,68 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-HashMap和ConcurrentHashMap实现原理分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/25/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">HashMap和ConcurrentHashMap实现原理分析</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/25/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" class="archive-article-date">
+  	<time datetime="2020-07-25T07:43:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/25/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-MySQL索引之BTree索引" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -233,7 +295,7 @@
 <p>Ai(i=0,…n)为指向子树根节点的指针，且指针Ai-1所指子树中所有节点的关键字均小于Ki(i=1, …, n)，An所指子树中所有节点的关键字均大于Kn；</p>
 <p>n为关键字的个数（ceil(m/2)-1 &lt;= n &lt;= m-1）；</p>
 <p>n+1为子树个数。</p>
-<p>5)所有的叶子节点都出现在同一层次上，并且不带信息（可以看作是外部节点或差找失败的节点，实际上这些节点不存在，指向这些节点的指针为空）。</p>
+<p>5)所有的叶子节点都出现在同一层次上，并且不带信息（可以看作是外部节点或查找失败的节点，实际上这些节点不存在，指向这些节点的指针为空）。</p>
 <p>举个例子比较好理解，如下图是一棵4阶的B-Tree，其深度为4</p>
 <p><img src="/assets/blogImg/MySQL索引之BTree索引_13.png" width="600"></p>
 
@@ -260,7 +322,7 @@
 <p>同样也是一颗B+Tree，data域保存数据记录的地址。因此，MyISAM中索引检索的算法为：首先按照B+Tree搜索算法搜索索引，如果指定的Key存在，则取出其data域的值，然后以data域的值为地址，读取相应数据记录。</p>
 <p>MyISAM的索引方式也叫做“非聚集”的，之所以这么称呼是为了与InnoDB的聚集索引区分。</p>
 <h3 id="InnoDB索引实现"><a href="#InnoDB索引实现" class="headerlink" title="InnoDB索引实现"></a>InnoDB索引实现</h3><p>虽然InnoDB也使用B+Tree作为索引结构，但具体实现方式却与MyISAM截然不同。</p>
-<p>第一个重大区别是InnoDB的数据文件本身就是索引文件。从上文知道，MyISAM索引文件和数据文件是分离的，索引文件仅保存数据记录的地址。而在InnoDB中，表数据文件本身就是按B+Tree组织的一个索引结构，这棵树的叶节点data域保存了完整的数据记录。这个索引的key是数据表的主键，因此InnoDB表数据文件本身就是主索引。</p>
+<p>第一个重大区别是InnoDB的数据文件本身就是索引文件。从上文知道，MyISAM索引文件和数据文件是分离的，索引文件仅保存数据记录的地址。而在InnoDB中，表数据文件本身就是按B+Tree组织的一个索引结构，这棵树的叶子节点data域保存了完整的数据记录。这个索引的key是数据表的主键，因此InnoDB表数据文件本身就是主索引。</p>
 <p><img src="/assets/blogImg/MySQL索引之BTree索引_17.png" width="600"></p>
 
 <p>上图是InnoDB主索引（同时也是数据文件）的示意图，可以看到叶节点包含了完整的数据记录。这种索引叫做聚集索引。因为InnoDB的数据文件本身要按主键聚集，所以InnoDB要求表必须有主键（MyISAM可以没有），如果没有显式指定，则MySQL系统会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，则MySQL自动为InnoDB表生成一个隐含字段作为主键，这个字段长度为6个字节，类型为长整形。</p>
@@ -789,56 +851,60 @@
 
 
   
-    <article id="post-hexo入门教程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-遍历二叉树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">hexo入门教程</a>
+      <a class="article-title" href="/2020/06/12/%E9%81%8D%E5%8E%86%E4%BA%8C%E5%8F%89%E6%A0%91/">遍历二叉树</a>
     </h1>
   
 
         
-        <a href="/2020/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" class="archive-article-date">
-  	<time datetime="2020-07-18T13:33:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-18</time>
+        <a href="/2020/06/12/%E9%81%8D%E5%8E%86%E4%BA%8C%E5%8F%89%E6%A0%91/" class="archive-article-date">
+  	<time datetime="2020-06-12T12:57:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-06-12</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p>安装Git</p>
-<p>安装Node.js</p>
-<h2 id="安装hexo"><a href="#安装hexo" class="headerlink" title="安装hexo"></a>安装hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+        <h2 id="1-二叉树的定义"><a href="#1-二叉树的定义" class="headerlink" title="1.二叉树的定义"></a>1.二叉树的定义</h2><p>每个节点之多只有2棵子树，并且二叉树的子树只有左右之分，左右子树次序不能任意颠倒</p>
+<h2 id="2-遍历二叉树"><a href="#2-遍历二叉树" class="headerlink" title="2.遍历二叉树"></a>2.遍历二叉树</h2><p>假设以L，D，R分别表示遍历左子树，访问根节点，遍历右子树，则可有DLR，LDR，LRD，DRL，RDL，RLD这6种遍历二叉树的方案。若限定先左后右，则只有前3种情况，分别称为：先序遍历，中序遍历，后序遍历</p>
+<p>下图是一棵二叉树，下面分别介绍这棵二叉树的3种遍历</p>
+<p><img src="/assets/blogImg/遍历二叉树_01.png" width="500"></p>
 
-<p>在指定目录初始化hexo</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo init D:\IdeaProjects\hexo-blog</span><br><span class="line">cd hexo-blog</span><br><span class="line">cnpm install</span><br></pre></td></tr></table></figure>
+<h3 id="先序遍历"><a href="#先序遍历" class="headerlink" title="先序遍历"></a>先序遍历</h3><p>1，2，4，6，7，3，5</p>
+<h3 id="中序遍历"><a href="#中序遍历" class="headerlink" title="中序遍历"></a>中序遍历</h3><p>4，6，7，2，1，5，3</p>
+<h3 id="后序遍历"><a href="#后序遍历" class="headerlink" title="后序遍历"></a>后序遍历</h3><p>7，6，4，2，5，3，1</p>
+<h2 id="3-拓展"><a href="#3-拓展" class="headerlink" title="3.拓展"></a>3.拓展</h2><h3 id="根据先序遍历和中序遍历推导树的结构"><a href="#根据先序遍历和中序遍历推导树的结构" class="headerlink" title="根据先序遍历和中序遍历推导树的结构"></a>根据先序遍历和中序遍历推导树的结构</h3><p>已知：<br>前序遍历: GDAFEMHZ<br>中序遍历: ADEFGHMZ<br>求后序遍历</p>
+<p>1）由前序遍历的特点可以知道根节点第一个被访问，则G是根节点；由中序遍历的特点可以知道，根节点G左边的节点ADEF是左子树的节点，根节点G右边的节点HMZ是右子树的</p>
+<p>节点；</p>
+<p>3）分析左子树结构，由前序遍历的特点可以知道左子树的根节点第二个被访问，则D是左子树的根节点；D左边只有A一个节点；D右边有FE，根据前序遍历（中左右）可以推断E是F的左节点，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_02.png" width="300"></p>
 
-<h2 id="启动hexo"><a href="#启动hexo" class="headerlink" title="启动hexo"></a>启动hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+<p>4）分析右子树结构。根据前序遍历特点M第一个被访问，所以M是右子树的根节点；在中序遍历中H在M左边，所以是M的左节点，Z在M的右边，所以是右节点，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_03.png" width="150"></p>
 
-<h2 id="更换hexo主题"><a href="#更换hexo主题" class="headerlink" title="更换hexo主题"></a>更换hexo主题</h2><p>克隆yilia主题到theme/yilia目录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;litten&#x2F;hexo-theme-yilia.git themes&#x2F;yilia</span><br></pre></td></tr></table></figure>
+<p>最终得到完整的树结构，如下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_04.png" width="300"></p>
 
-<p>修改_config.yml文件，修改为yilia</p>
-<p><img src="/assets/blogImg/hexo入门教程_01.png" width="500"></p> 
-清除缓存，编译
+<h3 id="根据中序遍历和后续遍历推导树的结构"><a href="#根据中序遍历和后续遍历推导树的结构" class="headerlink" title="根据中序遍历和后续遍历推导树的结构"></a>根据中序遍历和后续遍历推导树的结构</h3><p>已知：</p>
+<p>中序遍历：ADEFGHMZ<br>后序遍历：AEFDHZMG</p>
+<p>求后序遍历</p>
+<p>1）由后序遍历特点可以知道根节点最后被访问，所以G是根节点；由中序遍历特点可以知道，G左边的节点ADEF是左子树的节点，G右边的节点HMZ是右子树的节点；</p>
+<p>2）分析左子树结构。在后序遍历中D最后一个被访问，所以D是左子树根节点；在中序遍历中D左边一个节点A，所以A是D的左节点；D右边两个节点EF，根据中序遍历的特点E第一个被访问，所以E是根节点，F是E的左节点，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_02.png" width="300"></p>
 
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br></pre></td></tr></table></figure>
+<p>3）分析右子树结构。根据后续遍历的特点，M最后被访问，所以M是右子树根节点；根据中序遍历特点，M左边一个节点H，M右边一个节点Z，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_03.png" width="150"></p>
 
-<h2 id="新建文章"><a href="#新建文章" class="headerlink" title="新建文章"></a>新建文章</h2><p>新建的文章默认保存到source/_posts路径下</p>
-<p>可以使用Notepads编辑markdown文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo n “什么是微服务架构”</span><br></pre></td></tr></table></figure>
+<p>最终得到完整的树结构，如下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_04.png" width="300"></p>
 
-<h2 id="部署到github"><a href="#部署到github" class="headerlink" title="部署到github"></a>部署到github</h2><p>登录github，新建仓库freebie5.github.io（仓库名称必须是：昵称.githut.io）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install --save hexo-deployer-git</span><br></pre></td></tr></table></figure>
-
-<p>配置_config.yml</p>
-<p><img src="/assets/blogImg/hexo入门教程_02.png" width="500"></p> 
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-
-<p>访问<a href="https://freebie5.github.io/" target="_blank" rel="noopener">https://freebie5.github.io/</a></p>
+<h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://www.jianshu.com/p/1c50b23fcc30" target="_blank" rel="noopener">https://www.jianshu.com/p/1c50b23fcc30</a></p>
 
       
 
@@ -852,11 +918,23 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">入门教程</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">二叉树</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">hexo</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">先序遍历</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">中序遍历</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">后序遍历</a>
         		</li>
       		
 		</ul>
@@ -868,7 +946,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="/categories/hexo//" class="article-tag-list-link color5">hexo</a>
+        			<a href="/categories/数据结构//" class="article-tag-list-link color5">数据结构</a>
         		</li>
       		
 		</ul>
@@ -877,163 +955,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-CentOS7安装ZooKeeper" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/07/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/">CentOS7安装ZooKeeper</a>
-    </h1>
-  
-
-        
-        <a href="/2020/07/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/" class="archive-article-date">
-  	<time datetime="2020-07-09T14:47:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-09</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="下载ZooKeeper"><a href="#下载ZooKeeper" class="headerlink" title="下载ZooKeeper"></a>下载ZooKeeper</h2><p>ZooKeeper官网下载：<a href="http://zookeeper.apache.org/releases.html" target="_blank" rel="noopener">http://zookeeper.apache.org/releases.html</a></p>
-<h2 id="安装ZooKeeper"><a href="#安装ZooKeeper" class="headerlink" title="安装ZooKeeper"></a>安装ZooKeeper</h2><p>安装前需要先安装JVM</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zvxf apache-zookeeper-3.5.7-bin.tar.gz</span><br><span class="line">cd apache-zookeeper-3.5.7-bin</span><br></pre></td></tr></table></figure>
-
-<p>修改配置文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd config</span><br><span class="line">cp zoo_sample.cfg zoo.cfg</span><br><span class="line">vi zoo.cfg</span><br></pre></td></tr></table></figure>
-
-<p>修改如下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dataDir&#x3D;&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;dataDir</span><br><span class="line">dataLogDir&#x3D;&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;dataLogDir</span><br></pre></td></tr></table></figure>
-
-<h2 id="启动ZooKeeper"><a href="#启动ZooKeeper" class="headerlink" title="启动ZooKeeper"></a>启动ZooKeeper</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkServer.sh start conf&#x2F;zoo.cfg</span><br><span class="line">bin&#x2F;zkServer.sh status</span><br></pre></td></tr></table></figure>
-
-<h2 id="ZooKeeper客户端连接服务"><a href="#ZooKeeper客户端连接服务" class="headerlink" title="ZooKeeper客户端连接服务"></a>ZooKeeper客户端连接服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkCli.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置开机启动ZooKeeper"><a href="#配置开机启动ZooKeeper" class="headerlink" title="配置开机启动ZooKeeper"></a>配置开机启动ZooKeeper</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;rc.d&#x2F;init.d</span><br><span class="line">vi zookeeper.sh</span><br></pre></td></tr></table></figure>
-
-<p>配置内容如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line">#chkconfig:2345 20 90</span><br><span class="line">#description:zookeeper</span><br><span class="line">source &#x2F;etc&#x2F;profile.d&#x2F;java_env.sh</span><br><span class="line">&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;zkServer.sh start &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;conf&#x2F;zoo.cfg</span><br></pre></td></tr></table></figure>
-
-<p>内容说明</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash 声明脚本类型</span><br><span class="line">#chkconfig:2345 20 90 声明启动优先级</span><br><span class="line">#description:zookeeper 脚本描述</span><br></pre></td></tr></table></figure>
-
-<h2 id="多机多服务集群配置"><a href="#多机多服务集群配置" class="headerlink" title="多机多服务集群配置"></a>多机多服务集群配置</h2><p>准备三台ZooKeeper服务器（记得打开防火墙端口号）</p>
-<table>
-<thead>
-<tr>
-<th>主机名</th>
-<th>ip</th>
-<th>端口</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ZooKeeper01</td>
-<td>192.168.1.151</td>
-<td>2181 2888 3888</td>
-</tr>
-<tr>
-<td>ZooKeeper02</td>
-<td>192.168.1.152</td>
-<td>2181 2888 3888</td>
-</tr>
-<tr>
-<td>ZooKeeper03</td>
-<td>192.168.1.153</td>
-<td>2181 2888 3888</td>
-</tr>
-</tbody></table>
-<p>修改zoo.cfg配置文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin</span><br><span class="line">vi conf&#x2F;zoo.cfg</span><br></pre></td></tr></table></figure>
-
-<p>添加如下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server.1&#x3D;192.168.1.151:2888:3888</span><br><span class="line">server.2&#x3D;192.168.1.152:2888:3888</span><br><span class="line">server.3&#x3D;192.168.1.153:2888:3888</span><br></pre></td></tr></table></figure>
-
-<p>创建myid文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi dataDir&#x2F;myid</span><br><span class="line">服务器192.168.1.141的myid文件写入1</span><br><span class="line">服务器192.168.1.142的myid文件写入2</span><br><span class="line">服务器192.168.1.143的myid文件写入3</span><br></pre></td></tr></table></figure>
-
-<p>重启各个ZooKeeper服务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkServer.sh stop</span><br><span class="line">bin&#x2F;zkServer.sh start</span><br><span class="line">bin&#x2F;zkServer.sh status</span><br></pre></td></tr></table></figure>
-
-<p>如果配置成功可以看到如下内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">192.168.1.153</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: follower</span><br><span class="line"></span><br><span class="line">192.168.1.152</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: leader</span><br><span class="line"></span><br><span class="line">192.168.1.151</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: follower</span><br></pre></td></tr></table></figure>
-
-<p>使用zkCli.sh测试</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkCli.sh -server 192.168.1.151:2181</span><br></pre></td></tr></table></figure>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">ZooKeeper</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">下载安装</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">中间件</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/ZooKeeper//" class="article-tag-list-link color5">ZooKeeper</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/07/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/06/12/%E9%81%8D%E5%8E%86%E4%BA%8C%E5%8F%89%E6%A0%91/">展开全文 >></a>
         </p>
       
 
@@ -1350,6 +1272,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CentOS 7</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Shell</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
@@ -1367,6 +1301,26 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">先序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">中序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
               </li>
              
               <li class="article-tag-list-item">

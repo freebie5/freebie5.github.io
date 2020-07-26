@@ -260,6 +260,462 @@
 
 
   
+    <article id="post-Java并发编程之JMM" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/21/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BJMM/">Java并发编程之JMM</a>
+    </h1>
+  
+
+        
+        <a href="/2019/07/21/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BJMM/" class="archive-article-date">
+  	<time datetime="2019-07-21T15:42:25.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/07/21/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BJMM/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-CentOS7设置开机启动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/02/25/CentOS7%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/">CentOS7设置开机启动</a>
+    </h1>
+  
+
+        
+        <a href="/2018/02/25/CentOS7%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/" class="archive-article-date">
+  	<time datetime="2018-02-25T07:22:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-02-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>以Kafka服务开机启动为示例</p>
+<h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><h3 id="1-在-etc-rc-d-init-d目录下新建开机启动脚本kafka-sh"><a href="#1-在-etc-rc-d-init-d目录下新建开机启动脚本kafka-sh" class="headerlink" title="1.在/etc/rc.d/init.d目录下新建开机启动脚本kafka.sh"></a>1.在/etc/rc.d/init.d目录下新建开机启动脚本kafka.sh</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;rc.d&#x2F;init.d</span><br><span class="line">vi kafka.sh</span><br></pre></td></tr></table></figure>
+
+<p>脚本内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;sh</span><br><span class="line">#chkconfig:2345 80 90</span><br><span class="line">#decription:kafkaAll</span><br><span class="line">source &#x2F;etc&#x2F;profile.d&#x2F;java_env.sh</span><br><span class="line">ti1&#x3D;&#96;date +%s&#96;</span><br><span class="line">ti2&#x3D;&#96;date +%s&#96;</span><br><span class="line">i&#x3D;$(($ti2 - $ti1 ))</span><br><span class="line"></span><br><span class="line">while [[ &quot;$i&quot; -ne &quot;10&quot; ]]</span><br><span class="line">do</span><br><span class="line">        ti2&#x3D;&#96;date +%s&#96;</span><br><span class="line">        i&#x3D;$(($ti2 - $ti1 ))</span><br><span class="line">done</span><br><span class="line">nohup &#x2F;opt&#x2F;kafka_2.13-2.5.0&#x2F;bin&#x2F;kafka-server-start.sh config&#x2F;server.properties &amp;</span><br></pre></td></tr></table></figure>
+
+<p>脚本规范说明：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;sh</span><br><span class="line">#chkconfig:2345 90 10</span><br><span class="line">#decription:kafkaAll</span><br><span class="line">source &#x2F;etc&#x2F;profile.d&#x2F;java_env.sh</span><br></pre></td></tr></table></figure>
+
+<p>#!/bin/sh脚本运行必要说明</p>
+<p>chkonfig后面是启动级别和优先级</p>
+<p>description后面是服务描述</p>
+<p>source /etc/profile.d/java_env.sh引入环境变量</p>
+<p>CentOS 7下使用chkconfig添加的服务无法使用/etc/profile里面的环境变量</p>
+<p>如上面脚本意思是，服务必须在运行级2，3，4，5下被启动或关闭，启动的优先级是90，停止的优先级是10。<strong>优先级范围是0－100，数字越大，优先级越低。</strong></p>
+<h3 id="2-赋予执行权限"><a href="#2-赋予执行权限" class="headerlink" title="2.赋予执行权限"></a>2.赋予执行权限</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod 777 kafka.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-添加脚本到开机自动启动项目中"><a href="#3-添加脚本到开机自动启动项目中" class="headerlink" title="3.添加脚本到开机自动启动项目中"></a>3.添加脚本到开机自动启动项目中</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --add kafka.sh</span><br><span class="line">chkconfig kafkaAll.sh on</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-查看自启动项目列表"><a href="#4-查看自启动项目列表" class="headerlink" title="4.查看自启动项目列表"></a>4.查看自启动项目列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --list</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-移除自启动项目"><a href="#5-移除自启动项目" class="headerlink" title="5.移除自启动项目"></a>5.移除自启动项目</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --del kafka.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="Linux启动优先级"><a href="#Linux启动优先级" class="headerlink" title="Linux启动优先级"></a>Linux启动优先级</h3><p>运行级别就是操作系统当前正在运行的功能级别。这个级别从0到6 ，具有不同的功能。这些级别在/etc/inittab文件里指定。这个文件是init程序寻找的主要文件，最先运行的服务是那些放在/etc/rc.d 目录下的文件。<br>不同的运行级定义如下：(可以参考Linux里面的/etc/inittab)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 缺省的运行级，RHS用到的级别如下：</span><br><span class="line">0 关机</span><br><span class="line">1 单用户模式</span><br><span class="line">2 无网络支持的多用户模式</span><br><span class="line">3 有网络支持的多用户模式</span><br><span class="line">4 保留，未使用</span><br><span class="line">5 有网络支持有X-Window支持的多用户模式</span><br><span class="line">6 重新引导系统，即重启</span><br><span class="line"></span><br><span class="line"># 对各个运行级的详细解释：</span><br><span class="line">0 为停机，机器关闭。</span><br><span class="line">1 为单用户模式，就像Win9x下的安全模式类似。</span><br><span class="line">2 为多用户模式，但是没有NFS支持。 </span><br><span class="line">3 为完整的多用户模式，是标准的运行级。</span><br><span class="line">4 一般不用，在一些特殊情况下可以用它来做一些事情。例如在笔记本 电脑的电池用尽时，可以切换到这个模式来做一些设置。</span><br><span class="line">5 就是X11，进到X Window系统了。</span><br><span class="line">6 为重启，运行init 6机器就会重启。</span><br></pre></td></tr></table></figure>
+
+<h3 id="CentOS-7下使用chkconfig添加服务无法使用-etc-profile里面的环境变量"><a href="#CentOS-7下使用chkconfig添加服务无法使用-etc-profile里面的环境变量" class="headerlink" title="CentOS 7下使用chkconfig添加服务无法使用/etc/profile里面的环境变量"></a>CentOS 7下使用chkconfig添加服务无法使用/etc/profile里面的环境变量</h3><p>/etc/profile为入口的，基本是登录后执行的变量，而使用chkconfig添加的服务多以守护经常运行，没有登录。</p>
+<p>CentOS 7下使用chkconfig添加的服务无法使用/etc/profile里面的环境变量，所以要想在chkconfig添加的服务里使用环境变量，只有在服务的脚本中引入变量文件，比如:source /etc/profile，但不建议引入这个文件，直接想要哪个变量引入这里面的个别脚本：/etc/profile.d/xxx.sh</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">CentOS 7</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Shell</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/Linux相关//" class="article-tag-list-link color3">Linux相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/02/25/CentOS7%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-CentOS7安装ZooKeeper" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/01/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/">CentOS7安装ZooKeeper</a>
+    </h1>
+  
+
+        
+        <a href="/2018/01/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/" class="archive-article-date">
+  	<time datetime="2018-01-09T14:47:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-01-09</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="下载ZooKeeper"><a href="#下载ZooKeeper" class="headerlink" title="下载ZooKeeper"></a>下载ZooKeeper</h2><p>ZooKeeper官网下载：<a href="http://zookeeper.apache.org/releases.html" target="_blank" rel="noopener">http://zookeeper.apache.org/releases.html</a></p>
+<h2 id="安装ZooKeeper"><a href="#安装ZooKeeper" class="headerlink" title="安装ZooKeeper"></a>安装ZooKeeper</h2><p>安装前需要先安装JVM</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zvxf apache-zookeeper-3.5.7-bin.tar.gz</span><br><span class="line">cd apache-zookeeper-3.5.7-bin</span><br></pre></td></tr></table></figure>
+
+<p>修改配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd config</span><br><span class="line">cp zoo_sample.cfg zoo.cfg</span><br><span class="line">vi zoo.cfg</span><br></pre></td></tr></table></figure>
+
+<p>修改如下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dataDir&#x3D;&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;dataDir</span><br><span class="line">dataLogDir&#x3D;&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;dataLogDir</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动ZooKeeper"><a href="#启动ZooKeeper" class="headerlink" title="启动ZooKeeper"></a>启动ZooKeeper</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkServer.sh start conf&#x2F;zoo.cfg</span><br><span class="line">bin&#x2F;zkServer.sh status</span><br></pre></td></tr></table></figure>
+
+<h2 id="ZooKeeper客户端连接服务"><a href="#ZooKeeper客户端连接服务" class="headerlink" title="ZooKeeper客户端连接服务"></a>ZooKeeper客户端连接服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkCli.sh</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置开机启动ZooKeeper"><a href="#配置开机启动ZooKeeper" class="headerlink" title="配置开机启动ZooKeeper"></a>配置开机启动ZooKeeper</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;rc.d&#x2F;init.d</span><br><span class="line">vi zookeeper.sh</span><br></pre></td></tr></table></figure>
+
+<p>配置内容如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line">#chkconfig:2345 20 90</span><br><span class="line">#description:zookeeper</span><br><span class="line">source &#x2F;etc&#x2F;profile.d&#x2F;java_env.sh</span><br><span class="line">&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;zkServer.sh start &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;conf&#x2F;zoo.cfg</span><br></pre></td></tr></table></figure>
+
+<p>内容说明</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash 声明脚本类型</span><br><span class="line">#chkconfig:2345 20 90 声明启动优先级</span><br><span class="line">#description:zookeeper 脚本描述</span><br></pre></td></tr></table></figure>
+
+<h2 id="多机多服务集群配置"><a href="#多机多服务集群配置" class="headerlink" title="多机多服务集群配置"></a>多机多服务集群配置</h2><p>准备三台ZooKeeper服务器（记得打开防火墙端口号）</p>
+<table>
+<thead>
+<tr>
+<th>主机名</th>
+<th>ip</th>
+<th>端口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ZooKeeper01</td>
+<td>192.168.1.151</td>
+<td>2181 2888 3888</td>
+</tr>
+<tr>
+<td>ZooKeeper02</td>
+<td>192.168.1.152</td>
+<td>2181 2888 3888</td>
+</tr>
+<tr>
+<td>ZooKeeper03</td>
+<td>192.168.1.153</td>
+<td>2181 2888 3888</td>
+</tr>
+</tbody></table>
+<p>修改zoo.cfg配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin</span><br><span class="line">vi conf&#x2F;zoo.cfg</span><br></pre></td></tr></table></figure>
+
+<p>添加如下内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server.1&#x3D;192.168.1.151:2888:3888</span><br><span class="line">server.2&#x3D;192.168.1.152:2888:3888</span><br><span class="line">server.3&#x3D;192.168.1.153:2888:3888</span><br></pre></td></tr></table></figure>
+
+<p>创建myid文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi dataDir&#x2F;myid</span><br><span class="line">服务器192.168.1.141的myid文件写入1</span><br><span class="line">服务器192.168.1.142的myid文件写入2</span><br><span class="line">服务器192.168.1.143的myid文件写入3</span><br></pre></td></tr></table></figure>
+
+<p>重启各个ZooKeeper服务</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkServer.sh stop</span><br><span class="line">bin&#x2F;zkServer.sh start</span><br><span class="line">bin&#x2F;zkServer.sh status</span><br></pre></td></tr></table></figure>
+
+<p>如果配置成功可以看到如下内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">192.168.1.153</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: follower</span><br><span class="line"></span><br><span class="line">192.168.1.152</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: leader</span><br><span class="line"></span><br><span class="line">192.168.1.151</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: follower</span><br></pre></td></tr></table></figure>
+
+<p>使用zkCli.sh测试</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkCli.sh -server 192.168.1.151:2181</span><br></pre></td></tr></table></figure>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">ZooKeeper</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">下载安装</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">中间件</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/ZooKeeper//" class="article-tag-list-link color5">ZooKeeper</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2018/01/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-hexo入门教程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">hexo入门教程</a>
+    </h1>
+  
+
+        
+        <a href="/2017/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" class="archive-article-date">
+  	<time datetime="2017-07-18T13:33:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-07-18</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p>安装Git</p>
+<p>安装Node.js</p>
+<h2 id="安装hexo"><a href="#安装hexo" class="headerlink" title="安装hexo"></a>安装hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+
+<p>在指定目录初始化hexo</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo init D:\IdeaProjects\hexo-blog</span><br><span class="line">cd hexo-blog</span><br><span class="line">cnpm install</span><br></pre></td></tr></table></figure>
+
+<h2 id="启动hexo"><a href="#启动hexo" class="headerlink" title="启动hexo"></a>启动hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+
+<h2 id="更换hexo主题"><a href="#更换hexo主题" class="headerlink" title="更换hexo主题"></a>更换hexo主题</h2><p>克隆yilia主题到theme/yilia目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;litten&#x2F;hexo-theme-yilia.git themes&#x2F;yilia</span><br></pre></td></tr></table></figure>
+
+<p>修改_config.yml文件，修改为yilia</p>
+<p><img src="/assets/blogImg/hexo入门教程_01.png" width="500"></p> 
+清除缓存，编译
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br></pre></td></tr></table></figure>
+
+<h2 id="新建文章"><a href="#新建文章" class="headerlink" title="新建文章"></a>新建文章</h2><p>新建的文章默认保存到source/_posts路径下</p>
+<p>可以使用Notepads编辑markdown文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo n “什么是微服务架构”</span><br></pre></td></tr></table></figure>
+
+<h2 id="部署到github"><a href="#部署到github" class="headerlink" title="部署到github"></a>部署到github</h2><p>登录github，新建仓库freebie5.github.io（仓库名称必须是：昵称.githut.io）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install --save hexo-deployer-git</span><br></pre></td></tr></table></figure>
+
+<p>配置_config.yml</p>
+<p><img src="/assets/blogImg/hexo入门教程_02.png" width="500"></p> 
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>访问<a href="https://freebie5.github.io/" target="_blank" rel="noopener">https://freebie5.github.io/</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">入门教程</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">hexo</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/hexo//" class="article-tag-list-link color5">hexo</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
@@ -361,6 +817,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CentOS 7</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Shell</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
@@ -378,6 +846,26 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">先序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">中序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
               </li>
              
               <li class="article-tag-list-item">
