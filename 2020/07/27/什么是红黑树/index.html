@@ -6,17 +6,32 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>Tag: BTree索引 | 大香肠叔叔的码农日志</title>
+  <title>什么是红黑树 | 大香肠叔叔的码农日志</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="java spring">
-<meta property="og:type" content="website">
-<meta property="og:title" content="大香肠叔叔的码农日志">
-<meta property="og:url" content="http://yoursite.com/tags/BTree%E7%B4%A2%E5%BC%95/index.html">
+  <meta name="description" content="1.红黑树定义红黑树的定义也是它的性质，有以下五条：  性质1. 所有节点是红色或黑色 性质2. 根节点是黑色 性质3. 所有叶子都是黑色（叶子是NIL节点） 性质4. 如果一个节点是红的，则它的两个儿子都是黑的 性质5. 从任一节点到其叶子的所有简单路径都包含相同数目的黑色节点。  下图是一棵红黑树   2. 红黑树的基本操作2.1.查找操作因为红黑树也是二叉查找树，因此红黑树上的查找操作与普通">
+<meta property="og:type" content="article">
+<meta property="og:title" content="什么是红黑树">
+<meta property="og:url" content="http://yoursite.com/2020/07/27/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91/index.html">
 <meta property="og:site_name" content="大香肠叔叔的码农日志">
-<meta property="og:description" content="java spring">
+<meta property="og:description" content="1.红黑树定义红黑树的定义也是它的性质，有以下五条：  性质1. 所有节点是红色或黑色 性质2. 根节点是黑色 性质3. 所有叶子都是黑色（叶子是NIL节点） 性质4. 如果一个节点是红的，则它的两个儿子都是黑的 性质5. 从任一节点到其叶子的所有简单路径都包含相同数目的黑色节点。  下图是一棵红黑树   2. 红黑树的基本操作2.1.查找操作因为红黑树也是二叉查找树，因此红黑树上的查找操作与普通">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_01.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_02.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_03.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_04.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_05.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_06.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_07.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_08.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_09.png">
+<meta property="article:published_time" content="2020-07-27T14:08:04.000Z">
+<meta property="article:modified_time" content="2020-07-27T15:46:33.360Z">
 <meta property="article:author" content="大香肠叔叔">
+<meta property="article:tag" content="树">
+<meta property="article:tag" content="红黑树">
+<meta property="article:tag" content="数据结构">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_01.png">
   
   
     <link rel="icon" href="/favicon.png">
@@ -134,36 +149,118 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-什么是红黑树" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2020" class="archive-year">2020</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2020/07/23/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BBTree%E7%B4%A2%E5%BC%95/" class="archive-article-date">
-  	<time datetime="2020-07-22T16:17:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-23</time>
-</a>
-        </div>
-    	 
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2020/07/23/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BBTree%E7%B4%A2%E5%BC%95/">MySQL索引之BTree索引</a>
+    <h1 class="article-title" itemprop="name">
+      什么是红黑树
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
+        
+        <a href="/2020/07/27/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91/" class="archive-article-date">
+  	<time datetime="2020-07-27T14:08:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-27</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-红黑树定义"><a href="#1-红黑树定义" class="headerlink" title="1.红黑树定义"></a>1.红黑树定义</h2><p>红黑树的定义也是它的性质，有以下五条：</p>
+<ul>
+<li>性质1. 所有节点是红色或黑色</li>
+<li>性质2. 根节点是黑色</li>
+<li>性质3. 所有叶子都是黑色（叶子是NIL节点）</li>
+<li>性质4. 如果一个节点是红的，则它的两个儿子都是黑的</li>
+<li>性质5. 从任一节点到其叶子的所有简单路径都包含相同数目的黑色节点。</li>
+</ul>
+<p>下图是一棵红黑树</p>
+<p><img src="/assets/blogImg/什么是红黑树_01.png" width="500"></p>
+
+<h2 id="2-红黑树的基本操作"><a href="#2-红黑树的基本操作" class="headerlink" title="2. 红黑树的基本操作"></a>2. 红黑树的基本操作</h2><h3 id="2-1-查找操作"><a href="#2-1-查找操作" class="headerlink" title="2.1.查找操作"></a>2.1.查找操作</h3><p>因为红黑树也是二叉查找树，因此红黑树上的查找操作与普通二叉查找树上的查找操作相同。</p>
+<h3 id="2-2-插入操作"><a href="#2-2-插入操作" class="headerlink" title="2.2.插入操作"></a>2.2.插入操作</h3><p>插入节点是最麻烦的一个，它分为三种情况。我们一种一种看，这样比较有条理性。</p>
+<p>第一种情况：新节点没有父节点</p>
+<p>没有父节点只有一种情况，就是插入的节点是整棵树第一个节点，也就是根节点，为此我们只需要把插入节点涂成黑色就OK了。这也就保证了性质2：根节点是黑色的。</p>
+<p>第二种情况：新节点的父节点是黑色</p>
+<p>为此我们举一个例子，比如说上面的红黑树中，我们插入节点14。来看一下会发生什么情况？</p>
+<p><img src="/assets/blogImg/什么是红黑树_02.png" width="500"></p>
+
+<p>这种情况我们发现新插入节点14的父节点就是黑色的。现在为了保证红黑树的性质，我们对照每个特性来检查一遍。只要有一条不满足，我们都需要调整。我们重新对照之后会发现每一条都符合。此时不需要调整。</p>
+<p>第三种情况：新节点的父亲节点为红色</p>
+<p>我们还是举个例子，比如我们在最开始的红黑树基础之上插入节点21，此时会发生什么情况呢？</p>
+<p><img src="/assets/blogImg/什么是红黑树_03.png" width="500"></p>
+
+<p>此时还是老规矩，对照着红黑树的5个特征一个一个来看，只要是违反了一条就需要做出调整。我们来看一下：</p>
+<p>（1）每个节点只有两种颜色：红色和黑色。这一条满足。</p>
+<p>（2）根节点是黑色的。这一条也满足。</p>
+<p>（3）每个叶子节点（NIL）都是黑色的空节点。这一条满足。</p>
+<p>（4）从根节点到叶子节点，不会出现两个连续的红色节点。这一条发现不满足。</p>
+<p>就是上面这一条规则没有满足，所以我们此时需要调整？问题来了如何调整呢？因为直接看父节点没办法实现，所以还需要观察另外的节点，也就是新节点的叔叔节点。根据叔叔节点的颜色来调整。调整的方式有两种：变色和旋转。</p>
+<p>（1）叔叔节点是红色：</p>
+<p>此时插入的节点是21，但是叔叔节点是27，刚好是红色。我们直接来看调整的步骤：</p>
+<p>第一步：把新节点21的父节点22变成黑色。</p>
+<p><img src="/assets/blogImg/什么是红黑树_04.png" width="500"></p>
+
+<p>此时重新看一下是否满足红黑树的五条特征了没，一条一条发现，第五条没有满足，也就是从任何一个节点出发，到叶子节点，这条路径上没有相同数目的黑色节点。比如从25出发。这时候怎么办呢？那就继续调整。</p>
+<p>第二步：把22的父节点25变成红色</p>
+<p><img src="/assets/blogImg/什么是红黑树_05.png" width="500"></p>
+
+<p>这时候还是老规矩，不要嫌弃麻烦，因为只有经历了一步又一步的麻烦之后，你才能牢记那5条规则特征。我们对照之后会发现节点25和节点27是两个连续的红色节点，这时候又破坏了规则4。怎么办呢？那就继续调整就OK了。</p>
+<p>难道这时候还要继续往上调整吗？如果你这样做就错了，因为不断地往上调整最后就会把根节点变成了红色，会走进死胡同。我们往下走。</p>
+<p>第三步：把节点27变成黑色</p>
+<p><img src="/assets/blogImg/什么是红黑树_06.png" width="500"></p>
+
+<p>来吧，继续重新审查那5条规则特征。很明显节点17和节点25是两个连续的红色，又破坏了。是不是心太累了，调整了这么久，还是没有保证那5条规则，感觉是不是还没有平衡二叉树好。如果你现在有这种感觉，我只能说，希望你继续坚持下去，胜利就在眼前。</p>
+<p>第四步：把节点17和节点18都变成黑色节点</p>
+<p><img src="/assets/blogImg/什么是红黑树_07.png" width="500"></p>
+
+<p>来来来，现在你再对照一下那5条规则，是不是完全保证了。写到这真的是太累了，和你读这篇文章的感觉一样一样的，不过这种情况也只是插入情况中的一种。继续往下看：</p>
+<p>（1）叔叔节点是黑色：</p>
+<p>这种情况下又分了两种情况：</p>
+<p>第一种情况：新插入节点为父节点的左孩子</p>
+<p><img src="/assets/blogImg/什么是红黑树_08.png" width="600"></p>
+
+<p>第二种情况：新插入节点为父节点的右孩子</p>
+<p><img src="/assets/blogImg/什么是红黑树_09.png" width="600"></p>
+
+<p>按照第一遍的思路，我们对这两种情况执行同样的操作，最终也能保证红黑树的5条特征。</p>
+<h3 id="2-3-删除操作"><a href="#2-3-删除操作" class="headerlink" title="2.3.删除操作"></a>2.3.删除操作</h3><h2 id="3-红黑树的应用场景"><a href="#3-红黑树的应用场景" class="headerlink" title="3.红黑树的应用场景"></a>3.红黑树的应用场景</h2><p>红黑树的应用场景很多，比如</p>
+<ol>
+<li>Java中的TreeMap以及JDK1.8以后的HashMap（当节点中链表长度大于8时会将链表转为红黑树）</li>
+</ol>
+<h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://baijiahao.baidu.com/s?id=1645429373049393021&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">https://baijiahao.baidu.com/s?id=1645429373049393021&amp;wfr=spider&amp;for=pc</a></p>
+
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -173,44 +270,127 @@
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">红黑树</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">BTree索引</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">索引</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">数据结构</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+      
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="/categories/MySQL相关//" class="article-tag-list-link color3">MySQL相关</a>
+        			<a href="/categories/数据结构//" class="article-tag-list-link color5">数据结构</a>
         		</li>
       		
 		</ul>
 	</div>
 
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2020/07/27/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
   
   
-    </div></section>
+    <a href="/2020/07/25/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">HashMap和ConcurrentHashMap实现原理分析</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -233,9 +413,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,
