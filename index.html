@@ -136,6 +136,102 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-HashMap和ConcurrentHashMap实现原理分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/28/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">HashMap和ConcurrentHashMap实现原理分析</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/28/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" class="archive-article-date">
+  	<time datetime="2020-07-28T07:43:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-28</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-HashMap"><a href="#1-HashMap" class="headerlink" title="1.HashMap"></a>1.HashMap</h2><h3 id="1-1-实现原理"><a href="#1-1-实现原理" class="headerlink" title="1.1.实现原理"></a>1.1.实现原理</h3><h3 id="1-2-源码分析"><a href="#1-2-源码分析" class="headerlink" title="1.2.源码分析"></a>1.2.源码分析</h3><h3 id="1-3-JDK1-8与JDK1-7的性能对比"><a href="#1-3-JDK1-8与JDK1-7的性能对比" class="headerlink" title="1.3.JDK1.8与JDK1.7的性能对比"></a>1.3.JDK1.8与JDK1.7的性能对比</h3><h3 id="1-4-为什么说HashMap是线程不安全的"><a href="#1-4-为什么说HashMap是线程不安全的" class="headerlink" title="1.4.为什么说HashMap是线程不安全的"></a>1.4.为什么说HashMap是线程不安全的</h3><h3 id="1-5-HashMap和HashTable的区别"><a href="#1-5-HashMap和HashTable的区别" class="headerlink" title="1.5.HashMap和HashTable的区别"></a>1.5.HashMap和HashTable的区别</h3><h2 id="2-ConcurrentHashMap"><a href="#2-ConcurrentHashMap" class="headerlink" title="2.ConcurrentHashMap"></a>2.ConcurrentHashMap</h2>
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">HashMap</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">ConcurrentHashMap</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">并发</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">红黑树</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/并发编程相关//" class="article-tag-list-link color2">并发编程相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/28/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-什么是红黑树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -168,57 +264,39 @@
 <p><img src="/assets/blogImg/什么是红黑树_01.png" width="500"></p>
 
 <h2 id="2-红黑树的基本操作"><a href="#2-红黑树的基本操作" class="headerlink" title="2. 红黑树的基本操作"></a>2. 红黑树的基本操作</h2><h3 id="2-1-查找操作"><a href="#2-1-查找操作" class="headerlink" title="2.1.查找操作"></a>2.1.查找操作</h3><p>因为红黑树也是二叉查找树，因此红黑树上的查找操作与普通二叉查找树上的查找操作相同。</p>
-<h3 id="2-2-插入操作"><a href="#2-2-插入操作" class="headerlink" title="2.2.插入操作"></a>2.2.插入操作</h3><p>插入节点是最麻烦的一个，它分为三种情况。我们一种一种看，这样比较有条理性。</p>
-<p>第一种情况：新节点没有父节点</p>
-<p>没有父节点只有一种情况，就是插入的节点是整棵树第一个节点，也就是根节点，为此我们只需要把插入节点涂成黑色就OK了。这也就保证了性质2：根节点是黑色的。</p>
-<p>第二种情况：新节点的父节点是黑色</p>
-<p>为此我们举一个例子，比如说上面的红黑树中，我们插入节点14。来看一下会发生什么情况？</p>
-<p><img src="/assets/blogImg/什么是红黑树_02.png" width="500"></p>
+<h3 id="2-2-插入操作"><a href="#2-2-插入操作" class="headerlink" title="2.2.插入操作"></a>2.2.插入操作</h3><h4 id="2-2-1-为什么插入的节点总是红色"><a href="#2-2-1-为什么插入的节点总是红色" class="headerlink" title="2.2.1.为什么插入的节点总是红色"></a>2.2.1.为什么插入的节点总是红色</h4><p>因为插入一个红色节点比插入一个黑色节点破坏红黑特性的可能性更小，具体原因如下：</p>
+<ol>
+<li>插入黑色节点总会改变黑色高度（违背性质5），但是插入红色节点只有一半的机会会违背性质4。</li>
+<li>违背性质4比违背性质5要更容易修正。</li>
+</ol>
+<h4 id="2-2-2-插入节点破坏红黑树平衡的3种情况"><a href="#2-2-2-插入节点破坏红黑树平衡的3种情况" class="headerlink" title="2.2.2.插入节点破坏红黑树平衡的3种情况"></a>2.2.2.插入节点破坏红黑树平衡的3种情况</h4><ol>
+<li><p>如果是第一次插入，原树为空，只会违反红黑树的规则2，所以只要把插入的根节点改成黑色即可；</p>
+</li>
+<li><p>如果插入节点的父节点是黑色的，那不会违背红黑树的规则，什么也不需要做；</p>
+</li>
+<li><p>如果插入节点的父节点是红色的，又分为以下3种情况：</p>
+<p>3.1. 插入节点的父节点和其叔叔节点均为红色的；</p>
+<p>3.2. 插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点；</p>
+<p>3.3. 插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点。</p>
+</li>
+</ol>
+<p>下面具体分析情况3的各个情况需要什么操作才可以保持红黑树的平衡：</p>
+<h5 id="插入节点的父节点和其叔叔节点均为红色的"><a href="#插入节点的父节点和其叔叔节点均为红色的" class="headerlink" title="插入节点的父节点和其叔叔节点均为红色的"></a>插入节点的父节点和其叔叔节点均为红色的</h5><p>这个情况比较简单，只需要变色就行了，如下图左边的红黑树，将当前节点4的父节点5和叔叔节点8涂黑，将祖父节点7涂红，变成上图右边的红黑树。<strong>再将当前节点指向节点7，再次从新的当前节点7开始算法</strong></p>
+<p><img src="/assets/blogImg/什么是红黑树_10.png" width="900"></p>
 
-<p>这种情况我们发现新插入节点14的父节点就是黑色的。现在为了保证红黑树的性质，我们对照每个特性来检查一遍。只要有一条不满足，我们都需要调整。我们重新对照之后会发现每一条都符合。此时不需要调整。</p>
-<p>第三种情况：新节点的父亲节点为红色</p>
-<p>我们还是举个例子，比如我们在最开始的红黑树基础之上插入节点21，此时会发生什么情况呢？</p>
-<p><img src="/assets/blogImg/什么是红黑树_03.png" width="500"></p>
+<h5 id="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点"><a href="#插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点" class="headerlink" title="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点"></a>插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点</h5><p>将当前节点7的父节点2作为支点做左旋操作。完成后如下图左边的红黑树所示。<strong>再将当前节点指向节点2，再次从新的当前节点2开始算法</strong></p>
+<p><img src="/assets/blogImg/什么是红黑树_11.png" width="900"></p>
 
-<p>此时还是老规矩，对照着红黑树的5个特征一个一个来看，只要是违反了一条就需要做出调整。我们来看一下：</p>
-<p>（1）每个节点只有两种颜色：红色和黑色。这一条满足。</p>
-<p>（2）根节点是黑色的。这一条也满足。</p>
-<p>（3）每个叶子节点（NIL）都是黑色的空节点。这一条满足。</p>
-<p>（4）从根节点到叶子节点，不会出现两个连续的红色节点。这一条发现不满足。</p>
-<p>就是上面这一条规则没有满足，所以我们此时需要调整？问题来了如何调整呢？因为直接看父节点没办法实现，所以还需要观察另外的节点，也就是新节点的叔叔节点。根据叔叔节点的颜色来调整。调整的方式有两种：变色和旋转。</p>
-<p>（1）叔叔节点是红色：</p>
-<p>此时插入的节点是21，但是叔叔节点是27，刚好是红色。我们直接来看调整的步骤：</p>
-<p>第一步：把新节点21的父节点22变成黑色。</p>
-<p><img src="/assets/blogImg/什么是红黑树_04.png" width="500"></p>
-
-<p>此时重新看一下是否满足红黑树的五条特征了没，一条一条发现，第五条没有满足，也就是从任何一个节点出发，到叶子节点，这条路径上没有相同数目的黑色节点。比如从25出发。这时候怎么办呢？那就继续调整。</p>
-<p>第二步：把22的父节点25变成红色</p>
-<p><img src="/assets/blogImg/什么是红黑树_05.png" width="500"></p>
-
-<p>这时候还是老规矩，不要嫌弃麻烦，因为只有经历了一步又一步的麻烦之后，你才能牢记那5条规则特征。我们对照之后会发现节点25和节点27是两个连续的红色节点，这时候又破坏了规则4。怎么办呢？那就继续调整就OK了。</p>
-<p>难道这时候还要继续往上调整吗？如果你这样做就错了，因为不断地往上调整最后就会把根节点变成了红色，会走进死胡同。我们往下走。</p>
-<p>第三步：把节点27变成黑色</p>
-<p><img src="/assets/blogImg/什么是红黑树_06.png" width="500"></p>
-
-<p>来吧，继续重新审查那5条规则特征。很明显节点17和节点25是两个连续的红色，又破坏了。是不是心太累了，调整了这么久，还是没有保证那5条规则，感觉是不是还没有平衡二叉树好。如果你现在有这种感觉，我只能说，希望你继续坚持下去，胜利就在眼前。</p>
-<p>第四步：把节点17和节点18都变成黑色节点</p>
-<p><img src="/assets/blogImg/什么是红黑树_07.png" width="500"></p>
-
-<p>来来来，现在你再对照一下那5条规则，是不是完全保证了。写到这真的是太累了，和你读这篇文章的感觉一样一样的，不过这种情况也只是插入情况中的一种。继续往下看：</p>
-<p>（1）叔叔节点是黑色：</p>
-<p>这种情况下又分了两种情况：</p>
-<p>第一种情况：新插入节点为父节点的左孩子</p>
-<p><img src="/assets/blogImg/什么是红黑树_08.png" width="600"></p>
-
-<p>第二种情况：新插入节点为父节点的右孩子</p>
-<p><img src="/assets/blogImg/什么是红黑树_09.png" width="600"></p>
-
-<p>按照第一遍的思路，我们对这两种情况执行同样的操作，最终也能保证红黑树的5条特征。</p>
-<h3 id="2-3-删除操作"><a href="#2-3-删除操作" class="headerlink" title="2.3.删除操作"></a>2.3.删除操作</h3><h2 id="3-红黑树的应用场景"><a href="#3-红黑树的应用场景" class="headerlink" title="3.红黑树的应用场景"></a>3.红黑树的应用场景</h2><p>红黑树的应用场景很多，比如</p>
+<h5 id="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点"><a href="#插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点" class="headerlink" title="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点"></a>插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点</h5><p>将当前节点2的父节点7涂黑，将祖父节点11涂红，以祖父节点11为支点做右旋操作。最后把根节点涂黑，整个红黑树重新恢复了平衡，如上图右边的红黑树所示。至此，插入操作完成！</p>
+<h4 id="2-2-3变色，左旋转，右旋转的先后顺序"><a href="#2-2-3变色，左旋转，右旋转的先后顺序" class="headerlink" title="2.2.3变色，左旋转，右旋转的先后顺序"></a>2.2.3变色，左旋转，右旋转的先后顺序</h4><p>我们可以看出，如果是从情况1开始发生的，必然会走完情况2和3，也就是说这是一整个流程。当然，实际情况可能不会从情况1发生，如果从情况2开始发生，那再走个情况3即可完成调整，如果直接只要调整情况3，那么前两种情况均不需要调整了。故变色和旋转之间的先后关系可以表示为：变色-&gt;左旋-&gt;右旋。</p>
+<h3 id="2-3-删除操作"><a href="#2-3-删除操作" class="headerlink" title="2.3.删除操作"></a>2.3.删除操作</h3><p>下次复习总结的时候补上</p>
+<h2 id="3-红黑树的应用场景"><a href="#3-红黑树的应用场景" class="headerlink" title="3.红黑树的应用场景"></a>3.红黑树的应用场景</h2><p>红黑树的应用场景很多，比如</p>
 <ol>
 <li>Java中的TreeMap以及JDK1.8以后的HashMap（当节点中链表长度大于8时会将链表转为红黑树）</li>
 </ol>
 <h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://baijiahao.baidu.com/s?id=1645429373049393021&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">https://baijiahao.baidu.com/s?id=1645429373049393021&amp;wfr=spider&amp;for=pc</a></p>
+<p><a href="https://www.jianshu.com/p/30afcf59828f" target="_blank" rel="noopener">https://www.jianshu.com/p/30afcf59828f</a></p>
+<p><a href="https://blog.csdn.net/eson_15/article/details/51144079" target="_blank" rel="noopener">https://blog.csdn.net/eson_15/article/details/51144079</a></p>
 
       
 
@@ -232,11 +310,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">红黑树</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">红黑树</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
@@ -262,68 +340,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2020/07/27/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-HashMap和ConcurrentHashMap实现原理分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/07/25/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">HashMap和ConcurrentHashMap实现原理分析</a>
-    </h1>
-  
-
-        
-        <a href="/2020/07/25/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" class="archive-article-date">
-  	<time datetime="2020-07-25T07:43:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-25</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/07/25/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">展开全文 >></a>
         </p>
       
 
@@ -507,11 +523,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
@@ -1381,15 +1397,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">树</a>
+                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">并发</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1422,6 +1442,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
               </li>
              
               <li class="article-tag-list-item">
