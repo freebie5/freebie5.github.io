@@ -8,17 +8,19 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>HashMap和ConcurrentHashMap实现原理分析 | 大香肠叔叔的码农日志</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1.HashMap1.1.底层存储结构首先需要说明一点，HashMap的底层存储结构在JDK1.8及之后的版本做了优化，所以讨论底层存储结构的时候我会分开说明 JDK1.7JDK1.7及之前的版本中，HashMap的存储结构是数组+链表的结构，每次put操作添加一对K-V的时候，把K的hashCode进行hash映射到数组上，如果发生了哈希碰撞，才用链接法解决，如下图所示   一个蓝色方块代表一个">
+  <meta name="description" content="1.HashMap1.1.底层存储结构首先需要说明一点，HashMap的底层存储结构在JDK1.8及之后的版本做了优化，所以讨论底层存储结构的时候我会分开说明 JDK1.7JDK1.7及之前的版本中，HashMap的存储结构是数组+链表的结构，每次put操作添加一对K-V的时候，把K的hashCode进行hash映射到数组上，如果发生了哈希碰撞，用链接法解决，如下图所示   一个蓝色方块代表一个E">
 <meta property="og:type" content="article">
 <meta property="og:title" content="HashMap和ConcurrentHashMap实现原理分析">
 <meta property="og:url" content="http://yoursite.com/2020/07/28/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="大香肠叔叔的码农日志">
-<meta property="og:description" content="1.HashMap1.1.底层存储结构首先需要说明一点，HashMap的底层存储结构在JDK1.8及之后的版本做了优化，所以讨论底层存储结构的时候我会分开说明 JDK1.7JDK1.7及之前的版本中，HashMap的存储结构是数组+链表的结构，每次put操作添加一对K-V的时候，把K的hashCode进行hash映射到数组上，如果发生了哈希碰撞，才用链接法解决，如下图所示   一个蓝色方块代表一个">
+<meta property="og:description" content="1.HashMap1.1.底层存储结构首先需要说明一点，HashMap的底层存储结构在JDK1.8及之后的版本做了优化，所以讨论底层存储结构的时候我会分开说明 JDK1.7JDK1.7及之前的版本中，HashMap的存储结构是数组+链表的结构，每次put操作添加一对K-V的时候，把K的hashCode进行hash映射到数组上，如果发生了哈希碰撞，用链接法解决，如下图所示   一个蓝色方块代表一个E">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://yoursite.com/assets/blogImg/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90_01.png">
 <meta property="og:image" content="http://yoursite.com/assets/blogImg/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90_02.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90_03.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90_04.png">
 <meta property="article:published_time" content="2020-07-28T07:43:04.000Z">
-<meta property="article:modified_time" content="2020-07-29T15:47:58.118Z">
+<meta property="article:modified_time" content="2020-07-30T15:57:49.231Z">
 <meta property="article:author" content="大香肠叔叔">
 <meta property="article:tag" content="HashMap">
 <meta property="article:tag" content="ConcurrentHashMap">
@@ -164,7 +166,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="1-HashMap"><a href="#1-HashMap" class="headerlink" title="1.HashMap"></a>1.HashMap</h2><h3 id="1-1-底层存储结构"><a href="#1-1-底层存储结构" class="headerlink" title="1.1.底层存储结构"></a>1.1.底层存储结构</h3><p>首先需要说明一点，HashMap的底层存储结构在JDK1.8及之后的版本做了优化，所以讨论底层存储结构的时候我会分开说明</p>
-<h4 id="JDK1-7"><a href="#JDK1-7" class="headerlink" title="JDK1.7"></a>JDK1.7</h4><p>JDK1.7及之前的版本中，HashMap的存储结构是数组+链表的结构，每次put操作添加一对K-V的时候，把K的hashCode进行hash映射到数组上，如果发生了哈希碰撞，才用链接法解决，如下图所示</p>
+<h4 id="JDK1-7"><a href="#JDK1-7" class="headerlink" title="JDK1.7"></a>JDK1.7</h4><p>JDK1.7及之前的版本中，HashMap的存储结构是数组+链表的结构，每次put操作添加一对K-V的时候，把K的hashCode进行hash映射到数组上，如果发生了哈希碰撞，用链接法解决，如下图所示</p>
 <p><img src="/assets/blogImg/HashMap和ConcurrentHashMap实现原理分析_01.png" width="300"></p>
 
 <p>一个蓝色方块代表一个Entry，Entry是HashMap定义的一个静态内部类</p>
@@ -178,9 +180,35 @@
 
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">TreeNode</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">extends</span> <span class="title">LinkedHashMap</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    TreeNode&lt;K,V&gt; parent;  <span class="comment">// red-black tree links</span></span><br><span class="line">    TreeNode&lt;K,V&gt; left;</span><br><span class="line">    TreeNode&lt;K,V&gt; right;</span><br><span class="line">    TreeNode&lt;K,V&gt; prev;    <span class="comment">// needed to unlink next upon deletion</span></span><br><span class="line">    <span class="keyword">boolean</span> red;</span><br><span class="line">    <span class="comment">//省略成员方法和构造器</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h3 id="1-2-源码分析"><a href="#1-2-源码分析" class="headerlink" title="1.2.源码分析"></a>1.2.源码分析</h3><p>构造方法，加载因子，初始容量</p>
-<p>底层如何获取hash值</p>
-<h3 id="1-3-为什么说HashMap是线程不安全的"><a href="#1-3-为什么说HashMap是线程不安全的" class="headerlink" title="1.3.为什么说HashMap是线程不安全的"></a>1.3.为什么说HashMap是线程不安全的</h3><p>并发操作HashMap时为什么会出现死循环</p>
+<h3 id="1-2-源码分析"><a href="#1-2-源码分析" class="headerlink" title="1.2.源码分析"></a>1.2.源码分析</h3><p>JDK为开发者提供了一个接口java.util.Map，此接口主要有四个常用的实现类，分别是HashMap、Hashtable、LinkedHashMap和TreeMap，类继承关系如下图所示</p>
+<p><img src="/assets/blogImg/HashMap和ConcurrentHashMap实现原理分析_03.png" width="500"></p>
+
+<h4 id="1-2-1-重要成员变量"><a href="#1-2-1-重要成员变量" class="headerlink" title="1.2.1.重要成员变量"></a>1.2.1.重要成员变量</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//默认加载因子</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">float</span> DEFAULT_LOAD_FACTOR = <span class="number">0.75f</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//默认初始化容量</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_INITIAL_CAPACITY = <span class="number">1</span> &lt;&lt; <span class="number">4</span>;<span class="comment">//左带符号位移4位，即2的4次方，等于16</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *实际存储的key-value键值对的个数</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">transient</span> <span class="keyword">int</span> size;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *扩容阈值，当HashMap没有键值对时，大小为initialCapacity（默认值为DEFAULT_INITIAL_CAPACITY），</span></span><br><span class="line"><span class="comment"> *当第一次添加键值对时，大小为initialCapacity*loadFactor</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">int</span> threshold;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *加载因子存在的原因是因为减缓哈希冲突，如果初始桶为16，等到满16个元素才扩容，</span></span><br><span class="line"><span class="comment"> *某些桶里可能就有不止一个元素 了，所以加载因子默认为DEFAULT_LOAD_FACTOR</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">final</span> <span class="keyword">float</span> loadFactor;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *HashMap被改变的次数，由于HashMap非线程安全，在对HashMap进行迭代时，</span></span><br><span class="line"><span class="comment"> *如果期间其他线程的参与导致HashMap的结构发生变化了（比如put，remove等操作），</span></span><br><span class="line"><span class="comment"> *需要抛出异常ConcurrentModificationException进行快速失败（fail-fast）。</span></span><br><span class="line"><span class="comment"> *强调一点，内部结构发生变化指的是结构发生变化，例如put新键值对，</span></span><br><span class="line"><span class="comment"> *但是某个key对应的value值被覆盖不属于结构变化。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">transient</span> <span class="keyword">int</span> modCount;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-2-构造方法"><a href="#1-2-2-构造方法" class="headerlink" title="1.2.2.构造方法"></a>1.2.2.构造方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">(<span class="keyword">int</span> initialCapacity, <span class="keyword">float</span> loadFactor)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &lt; <span class="number">0</span>)</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal initial capacity: "</span> + initialCapacity);</span><br><span class="line">    <span class="keyword">if</span> (initialCapacity &gt; MAXIMUM_CAPACITY)</span><br><span class="line">    	initialCapacity = MAXIMUM_CAPACITY;</span><br><span class="line">    <span class="keyword">if</span> (loadFactor &lt;= <span class="number">0</span> || Float.isNaN(loadFactor))</span><br><span class="line">    	<span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">"Illegal load factor: "</span> + loadFactor);</span><br><span class="line">    <span class="keyword">this</span>.loadFactor = loadFactor;</span><br><span class="line">    threshold = initialCapacity;</span><br><span class="line">    init();<span class="comment">//空方法，不过在其子类如LinkedHashMap中有对应实现</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">(<span class="keyword">int</span> initialCapacity)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(initialCapacity, DEFAULT_LOAD_FACTOR);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">HashMap</span><span class="params">(Map&lt;? extends K, ? extends V&gt; m)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>(Math.max((<span class="keyword">int</span>) (m.size() / DEFAULT_LOAD_FACTOR) + <span class="number">1</span>, DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR);</span><br><span class="line">    inflateTable(threshold);</span><br><span class="line">    putAllForCreate(m);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-3-如何定位key的数组索引位置"><a href="#1-2-3-如何定位key的数组索引位置" class="headerlink" title="1.2.3.如何定位key的数组索引位置"></a>1.2.3.如何定位key的数组索引位置</h4><h5 id="JDK1-8及之后的版本定位索引位置逻辑如下"><a href="#JDK1-8及之后的版本定位索引位置逻辑如下" class="headerlink" title="JDK1.8及之后的版本定位索引位置逻辑如下"></a>JDK1.8及之后的版本定位索引位置逻辑如下</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取hash值的方法</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hash</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h;</span><br><span class="line">    <span class="keyword">return</span> (key == <span class="keyword">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//HashMap类的其他成员方法中多次用到这段代码，用于对hash()方法返回值进行取模，定位索引位置</span></span><br><span class="line"><span class="comment">//n数组的容量，2的倍数</span></span><br><span class="line">tab[(n - <span class="number">1</span>) &amp; hash]</span><br></pre></td></tr></table></figure>
+
+<p>定位key的数组索引位置主要分为三步：</p>
+<p>1）获取key的hashCode</p>
+<p>h = key.hashCode()</p>
+<p>2）hashCode的高16和低16进行异或运算</p>
+<p>hash = (h = key.hashCode()) ^ (h &gt;&gt;&gt; 16)</p>
+<p>3）取模定位索引位置</p>
+<p>(n - 1) &amp; hash</p>
+<p><img src="/assets/blogImg/HashMap和ConcurrentHashMap实现原理分析_04.png" width="500"></p>
+
+<p>取模过程有一个关键点，那就是n的大小只可能是2的倍数，这就导致n的二进制只有一位是1。例如，16的二进制是1 0000，32的二进制是10 0000，所以n-1的二进制除了最高位是0，低位都是1，例如，15（16-1）的二级制是0 1111，31（32-1）的二级制是01 1111。</p>
+<h5 id="JDK1-7及之前的版本定位索引位置逻辑如下"><a href="#JDK1-7及之前的版本定位索引位置逻辑如下" class="headerlink" title="JDK1.7及之前的版本定位索引位置逻辑如下"></a>JDK1.7及之前的版本定位索引位置逻辑如下</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//获取hash值的方法</span></span><br><span class="line"><span class="function"><span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hash</span><span class="params">(Object k)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//哈希种子，一个随机值，用于尽量减少哈希碰撞</span></span><br><span class="line">    <span class="keyword">int</span> h = hashSeed;</span><br><span class="line">    <span class="comment">//如果是k是String类型且哈希种子不等于0，则调用sun.misc.Hashing.stringHash32返回hash值</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0</span> != h &amp;&amp; k <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">        <span class="keyword">return</span> sun.misc.Hashing.stringHash32((String) k);</span><br><span class="line">    &#125;</span><br><span class="line">    h ^= k.hashCode();</span><br><span class="line">    h ^= (h &gt;&gt;&gt; <span class="number">20</span>) ^ (h &gt;&gt;&gt; <span class="number">12</span>);</span><br><span class="line">    <span class="keyword">return</span> h ^ (h &gt;&gt;&gt; <span class="number">7</span>) ^ (h &gt;&gt;&gt; <span class="number">4</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//取模定位索引位置</span></span><br><span class="line"><span class="comment">//length数组的容量，2的倍数</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">indexFor</span><span class="params">(<span class="keyword">int</span> h, <span class="keyword">int</span> length)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> h &amp; (length-<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>定位key的数组索引位置主要分为三步：</p>
+<p>1）获取key的hashCode，并和哈希种子进行异或运算</p>
+<p>h ^= k.hashCode()</p>
+<p>2）对hashCode进行一系列的无符号右移和异或运算，确保hashCode的随机性</p>
+<p>h ^= (h &gt;&gt;&gt; 20) ^ (h &gt;&gt;&gt; 12)<br>h ^ (h &gt;&gt;&gt; 7) ^ (h &gt;&gt;&gt; 4)</p>
+<p>3）取模定位索引位置，取模过程参考JDK1.8的取模过程</p>
+<p>h &amp; (length-1)</p>
+<h4 id="1-2-4-HashMap的put方法"><a href="#1-2-4-HashMap的put方法" class="headerlink" title="1.2.4.HashMap的put方法"></a>1.2.4.HashMap的put方法</h4><h4 id="扩容机制"><a href="#扩容机制" class="headerlink" title="扩容机制"></a>扩容机制</h4><h4 id="多线程使用场景中HashMap可能造成死循环"><a href="#多线程使用场景中HashMap可能造成死循环" class="headerlink" title="多线程使用场景中HashMap可能造成死循环"></a>多线程使用场景中HashMap可能造成死循环</h4><h3 id="1-3-为什么说HashMap是线程不安全的"><a href="#1-3-为什么说HashMap是线程不安全的" class="headerlink" title="1.3.为什么说HashMap是线程不安全的"></a>1.3.为什么说HashMap是线程不安全的</h3><p>并发操作HashMap时为什么会出现死循环</p>
 <h3 id="1-4-HashMap和HashTable的区别"><a href="#1-4-HashMap和HashTable的区别" class="headerlink" title="1.4.HashMap和HashTable的区别"></a>1.4.HashMap和HashTable的区别</h3><p>Collections.synchronizedMap</p>
 <h2 id="2-ConcurrentHashMap"><a href="#2-ConcurrentHashMap" class="headerlink" title="2.ConcurrentHashMap"></a>2.ConcurrentHashMap</h2><h3 id="2-1-底层存储结构"><a href="#2-1-底层存储结构" class="headerlink" title="2.1.底层存储结构"></a>2.1.底层存储结构</h3><p>1.7</p>
 <p>1.8</p>
@@ -492,14 +520,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">树</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
               </li>
              
@@ -508,15 +528,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+                <a href="javascript:void(0)" class="js-tag color2">树</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">js</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">java</a>
+                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -533,6 +549,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
               </li>
              
               <li class="article-tag-list-item">
