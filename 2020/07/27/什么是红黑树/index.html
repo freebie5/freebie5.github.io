@@ -16,13 +16,13 @@
 <meta property="og:description" content="1.红黑树定义红黑树的定义也是它的性质，有以下五条：  性质1. 所有节点是红色或黑色 性质2. 根节点是黑色 性质3. 所有叶子都是黑色（叶子是NIL节点） 性质4. 如果一个节点是红的，则它的两个儿子都是黑的 性质5. 从任一节点到其叶子的所有简单路径都包含相同数目的黑色节点。  下图是一棵红黑树   2. 红黑树的基本操作2.1.查找操作因为红黑树也是二叉查找树，因此红黑树上的查找操作与普通">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_01.png">
-<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_10.png">
-<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_11.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_2.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_3.png">
 <meta property="article:published_time" content="2020-07-27T14:08:04.000Z">
-<meta property="article:modified_time" content="2020-07-28T15:15:10.166Z">
+<meta property="article:modified_time" content="2020-07-31T16:50:06.792Z">
 <meta property="article:author" content="大香肠叔叔">
-<meta property="article:tag" content="红黑树">
 <meta property="article:tag" content="树">
+<meta property="article:tag" content="红黑树">
 <meta property="article:tag" content="数据结构">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://yoursite.com/assets/blogImg/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91_01.png">
@@ -193,10 +193,10 @@
 </ol>
 <p>下面具体分析情况3的各个情况需要什么操作才可以保持红黑树的平衡：</p>
 <h5 id="插入节点的父节点和其叔叔节点均为红色的"><a href="#插入节点的父节点和其叔叔节点均为红色的" class="headerlink" title="插入节点的父节点和其叔叔节点均为红色的"></a>插入节点的父节点和其叔叔节点均为红色的</h5><p>这个情况比较简单，只需要变色就行了，如下图左边的红黑树，将当前节点4的父节点5和叔叔节点8涂黑，将祖父节点7涂红，变成上图右边的红黑树。<strong>再将当前节点指向节点7，再次从新的当前节点7开始算法</strong></p>
-<p><img src="/assets/blogImg/什么是红黑树_10.png" width="900"></p>
+<p><img src="/assets/blogImg/什么是红黑树_2.png" width="900"></p>
 
 <h5 id="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点"><a href="#插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点" class="headerlink" title="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点"></a>插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点</h5><p>将当前节点7的父节点2作为支点做左旋操作。完成后如下图左边的红黑树所示。<strong>再将当前节点指向节点2，再次从新的当前节点2开始算法</strong></p>
-<p><img src="/assets/blogImg/什么是红黑树_11.png" width="900"></p>
+<p><img src="/assets/blogImg/什么是红黑树_3.png" width="900"></p>
 
 <h5 id="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点"><a href="#插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点" class="headerlink" title="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点"></a>插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点</h5><p>将当前节点2的父节点7涂黑，将祖父节点11涂红，以祖父节点11为支点做右旋操作。最后把根节点涂黑，整个红黑树重新恢复了平衡，如上图右边的红黑树所示。至此，插入操作完成！</p>
 <h4 id="2-2-3变色，左旋转，右旋转的先后顺序"><a href="#2-2-3变色，左旋转，右旋转的先后顺序" class="headerlink" title="2.2.3变色，左旋转，右旋转的先后顺序"></a>2.2.3变色，左旋转，右旋转的先后顺序</h4><p>我们可以看出，如果是从情况1开始发生的，必然会走完情况2和3，也就是说这是一整个流程。当然，实际情况可能不会从情况1发生，如果从情况2开始发生，那再走个情况3即可完成调整，如果直接只要调整情况3，那么前两种情况均不需要调整了。故变色和旋转之间的先后关系可以表示为：变色-&gt;左旋-&gt;右旋。</p>
@@ -242,11 +242,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">红黑树</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">红黑树</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
@@ -331,11 +331,11 @@
   
 <nav id="article-nav">
   
-    <a href="/2020/07/28/HashMap%E5%92%8CConcurrentHashMap%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2020/07/28/HashMap%E5%88%86%E6%9E%90%E6%80%BB%E7%BB%93/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
-          HashMap和ConcurrentHashMap实现原理分析
+          HashMap分析总结
         
       </div>
     </a>
@@ -460,19 +460,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
+                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">并发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
+                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -485,18 +481,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Shell</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -524,7 +508,43 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">并发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">索引</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -541,26 +561,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">js</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">索引</a>
               </li>
              
               <li class="article-tag-list-item">

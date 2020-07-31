@@ -16,7 +16,7 @@
 <meta property="og:description" content="1.需求场景公司最近有个开发任务，需要对接第三方接口，涉及到WebService客户端调用方式，我简单描述一下需求： 1.对接第三方WebServcie服务接口 2.由于我们生产服务器有IP和端口限制，所以调用第三方接口都需要提前一周申请权限 2.功能细化按照上面的需求，其实功能实现非常简单，我只需要用WebService客户端调用第三方提供的WebService服务端即可，但是事实上我在实际开发">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-07-19T13:31:08.000Z">
-<meta property="article:modified_time" content="2020-07-21T15:36:39.247Z">
+<meta property="article:modified_time" content="2020-07-31T17:00:56.352Z">
 <meta property="article:author" content="大香肠叔叔">
 <meta property="article:tag" content="日常开发">
 <meta property="article:tag" content="WebService">
@@ -172,7 +172,7 @@
 <p>关于第三种方式我重点说一下</p>
 <p>刚开始我是使用了动态Xfire的方式调用，由于动态Xfire需要解析wsdl文档获取接口入参和目标服务地址wsdlsoap:address，从而Xfire实际上请求的端口号是9080，所以我一直请求超时。</p>
 <p>明白问题所在之后，我换了种调用方式，动态Axis方式，由于动态Axis方式需要指定入参名称，所以没有解析wsdl文档导致请求错误端口的问题，最终可以成功调用服务。</p>
-<h3 id="5-几种WebServie客户端调用方式"><a href="#5-几种WebServie客户端调用方式" class="headerlink" title="5.几种WebServie客户端调用方式"></a>5.几种WebServie客户端调用方式</h3><p>这几种方式都是动态调用的方式</p>
+<h2 id="5-几种WebServie客户端调用方式"><a href="#5-几种WebServie客户端调用方式" class="headerlink" title="5.几种WebServie客户端调用方式"></a>5.几种WebServie客户端调用方式</h2><p>这几种方式都是动态调用的方式</p>
 <p>项目git路径：<a href="https://github.com/freebie5/WebServiceDemo.git" target="_blank" rel="noopener">https://github.com/freebie5/WebServiceDemo.git</a></p>
 <h4 id="5-1-Axis动态调用"><a href="#5-1-Axis动态调用" class="headerlink" title="5.1.Axis动态调用"></a>5.1.Axis动态调用</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.axis.client.Call;</span><br><span class="line"><span class="keyword">import</span> org.apache.axis.client.Service;</span><br><span class="line"><span class="keyword">import</span> org.apache.axis.encoding.XMLType;</span><br><span class="line"><span class="keyword">import</span> javax.xml.namespace.QName;</span><br><span class="line"><span class="keyword">import</span> javax.xml.rpc.ParameterMode;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AxisUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 动态Axis方式</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> inputParams</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getResult</span><span class="params">(String url, String method, String namespace,</span></span></span><br><span class="line"><span class="function"><span class="params">                                         List&lt;Map&lt;String,Object&gt;&gt; inputParams)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Service service = <span class="keyword">new</span> Service();</span><br><span class="line">        Call call = (Call) service.createCall();</span><br><span class="line">        call.setTargetEndpointAddress(url);</span><br><span class="line">        call.setOperationName(<span class="keyword">new</span> QName(namespace, method));</span><br><span class="line">        call.setUseSOAPAction(<span class="keyword">true</span>);</span><br><span class="line">        call.setSOAPActionURI(namespace+method);</span><br><span class="line">        call.setTimeout(<span class="number">30</span>*<span class="number">1000</span>);</span><br><span class="line"><span class="comment">//        call.setReturnType(XMLType.XSD_STRING);</span></span><br><span class="line">        List&lt;Object&gt; values = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">if</span>(inputParams!=<span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span>(Map&lt;String,Object&gt; inputParam:inputParams) &#123;</span><br><span class="line">                String paramName = (String)inputParam.get(<span class="string">"paramName"</span>);</span><br><span class="line">                QName paramValueType = (QName)inputParam.get(<span class="string">"paramValueType"</span>);</span><br><span class="line">                call.addParameter(paramName, paramValueType, ParameterMode.IN);</span><br><span class="line">                Object paramValue = inputParam.get(<span class="string">"paramValue"</span>);</span><br><span class="line">                values.add(paramValue);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 调用服务</span></span><br><span class="line">        <span class="keyword">return</span> call.invoke(values.toArray());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -205,6 +205,10 @@
 
 <h4 id="5-6-测试"><a href="#5-6-测试" class="headerlink" title="5.6.测试"></a>5.6.测试</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.axis.encoding.XMLType;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String METHOD = <span class="string">"getCountryCityByIp"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String RESULT_TAG = <span class="string">"getCountryCityByIpResult"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String NAME_SPACE = <span class="string">"http://WebXml.com.cn/"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String WSDL = <span class="string">"http://www.webxml.com.cn/WebServices/IpAddressSearchWebService.asmx?wsdl"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Main.getResultByHttpClient4();</span><br><span class="line">        Main.getResultByCxf();</span><br><span class="line">        Main.getResultByXfire();</span><br><span class="line">        Main.getResultByAxis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByHttpClient4</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL.replace(<span class="string">"?wsdl"</span>,<span class="string">""</span>);<span class="comment">//不需要?wsdl后缀;</span></span><br><span class="line">        String method = METHOD;</span><br><span class="line">        String resultTag = RESULT_TAG;</span><br><span class="line">        String namespace = NAME_SPACE;</span><br><span class="line">        List&lt;Map&lt;String,Object&gt;&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Map&lt;String,Object&gt; param0 = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        param0.put(<span class="string">"paramName"</span>, <span class="string">"theIpAddress"</span>);</span><br><span class="line">        param0.put(<span class="string">"paramValue"</span>, <span class="string">"183.54.42.103"</span>);</span><br><span class="line">        inputParams.add(param0);</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Object result = HttpClient4Util.getResult(url, method, resultTag, namespace, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByCxf</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL;</span><br><span class="line">        String nameSpace = NAME_SPACE;</span><br><span class="line">        String method = METHOD;</span><br><span class="line">        List&lt;Object&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        inputParams.add(<span class="string">"183.54.42.103"</span>);</span><br><span class="line">        Object result = CxfUtil.getResult(url, nameSpace, method, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByXfire</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL;</span><br><span class="line">        String method = METHOD;</span><br><span class="line">        List&lt;Object&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        inputParams.add(<span class="string">"183.54.42.103"</span>);</span><br><span class="line">        Object result = XfireUtil.getResult(url, method, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByAxis</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL.replace(<span class="string">"?wsdl"</span>,<span class="string">""</span>);<span class="comment">//不需要?wsdl后缀</span></span><br><span class="line">        String method = METHOD;</span><br><span class="line">        String namespace = NAME_SPACE;</span><br><span class="line">        List&lt;Map&lt;String,Object&gt;&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Map&lt;String,Object&gt; inputParam0 = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        inputParam0.put(<span class="string">"paramName"</span>, <span class="string">"theIpAddress"</span>);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValueType"</span>, XMLType.XSD_STRING);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValue"</span>, <span class="string">"183.54.42.103"</span>);</span><br><span class="line">        inputParams.add(inputParam0);</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Object result = AxisUtil.getResult(url, method, namespace, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByAxis2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        String url = WSDL.replace(<span class="string">"?wsdl"</span>,<span class="string">""</span>);<span class="comment">//不需要?wsdl后缀</span></span><br><span class="line">        String method = METHOD;</span><br><span class="line">        String namespace = NAME_SPACE;</span><br><span class="line">        List&lt;Map&lt;String,Object&gt;&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Map&lt;String,Object&gt; inputParam0 = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        inputParam0.put(<span class="string">"paramName"</span>, <span class="string">"theIpAddress"</span>);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValueType"</span>, XMLType.XSD_STRING);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValue"</span>, <span class="string">"183.54.42.103"</span>);</span><br><span class="line">        inputParams.add(inputParam0);</span><br><span class="line">        String result = Axis2Util.getResult(url, method, namespace, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h2 id="6-引用"><a href="#6-引用" class="headerlink" title="6.引用"></a>6.引用</h2><p><a href="https://www.iteye.com/blog/gavin-chen-336727" target="_blank" rel="noopener">https://www.iteye.com/blog/gavin-chen-336727</a></p>
+<p>用于测试的在线wsdl：</p>
+<p><a href="https://www.cnblogs.com/yuxuan/archive/2010/10/27/1862669.html" target="_blank" rel="noopener">https://www.cnblogs.com/yuxuan/archive/2010/10/27/1862669.html</a></p>
+<p><a href="http://www.webxml.com.cn/WebServices/IpAddressSearchWebService.asmx?wsdl" target="_blank" rel="noopener">http://www.webxml.com.cn/WebServices/IpAddressSearchWebService.asmx?wsdl</a></p>
 
       
 
@@ -453,19 +457,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
+                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">并发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
+                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -478,18 +478,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Shell</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -517,7 +505,43 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">并发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">索引</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -534,26 +558,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">js</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">索引</a>
               </li>
              
               <li class="article-tag-list-item">

@@ -16,7 +16,7 @@
 <meta property="og:description" content="1.需求场景公司最近有个开发任务，需要对接第三方接口，涉及到长轮询的，我简单描述一下需求： 1.请求第三方的二维码凭证接口获取凭证qrCodeKey，用qrCodeKey作为参数生成链接，例如： http:&#x2F;&#x2F;www.freebie5.com?qrCodeKey&#x3D;123456 然后，把链接作为内容，生成二维码 2.用户手机扫描二维码访问链接，进行授权 3.如果用户授权，那么第三方会把该用户的授权信">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-07-18T14:06:04.000Z">
-<meta property="article:modified_time" content="2020-07-18T15:19:07.713Z">
+<meta property="article:modified_time" content="2020-07-31T16:57:10.789Z">
 <meta property="article:author" content="大香肠叔叔">
 <meta property="article:tag" content="日常开发">
 <meta property="article:tag" content="js">
@@ -178,6 +178,7 @@
 
 <h4 id="2-3-2后台demo"><a href="#2-3-2后台demo" class="headerlink" title="2.3.2后台demo"></a>2.3.2后台demo</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TIMEOUT = <span class="number">15</span> * <span class="number">1000</span>;<span class="comment">//15秒</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> JSONObject <span class="title">getInfo</span><span class="params">(String busNo)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    JSONObject result = <span class="keyword">new</span> JSONObject();</span><br><span class="line">    <span class="comment">//授权信息</span></span><br><span class="line">    JSONObject infoResult = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">long</span> requestTime = System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">while</span> ((System.currentTimeMillis() - requestTime) &lt; TIMEOUT) &#123;</span><br><span class="line">        <span class="comment">//查询redis缓存，获取授权信息</span></span><br><span class="line">        infoResult = getInfoResultByRedis(busNo);</span><br><span class="line">        <span class="keyword">if</span> (infoResult!=<span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">break</span>;<span class="comment">// 跳出循环，返回数据</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);<span class="comment">// 休眠1秒</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (infoResult==<span class="keyword">null</span>) &#123;</span><br><span class="line">        result.put(<span class="string">"state"</span>, <span class="string">"0"</span>);</span><br><span class="line">        result.put(<span class="string">"msg"</span>, <span class="string">"超时"</span>);</span><br><span class="line">        result.put(<span class="string">"infoResult"</span>, <span class="keyword">new</span> JSONObject());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        result.put(<span class="string">"state"</span>, <span class="string">"1"</span>);</span><br><span class="line">        result.put(<span class="string">"msg"</span>, <span class="string">"成功"</span>);</span><br><span class="line">        result.put(<span class="string">"infoResult"</span>, infoResult);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<h2 id="3-引用"><a href="#3-引用" class="headerlink" title="3.引用"></a>3.引用</h2><p><a href="https://blog.csdn.net/ddwddw4/article/details/95060303" target="_blank" rel="noopener">https://blog.csdn.net/ddwddw4/article/details/95060303</a></p>
 
       
 
@@ -430,19 +431,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
+                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">并发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
+                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -455,18 +452,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Shell</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -494,7 +479,43 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">并发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">索引</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -511,26 +532,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">js</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">索引</a>
               </li>
              
               <li class="article-tag-list-item">
