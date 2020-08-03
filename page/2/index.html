@@ -136,6 +136,515 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-消息队列实现分布式事务" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/">消息队列实现分布式事务</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/" class="archive-article-date">
+  	<time datetime="2020-07-20T16:14:06.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-21</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/21/%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-WebService客户端的几种调用方式" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/19/WebService%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E5%87%A0%E7%A7%8D%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F/">WebService客户端的几种调用方式</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/19/WebService%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E5%87%A0%E7%A7%8D%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F/" class="archive-article-date">
+  	<time datetime="2020-07-19T13:31:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-19</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-需求场景"><a href="#1-需求场景" class="headerlink" title="1.需求场景"></a>1.需求场景</h2><p>公司最近有个开发任务，需要对接第三方接口，涉及到WebService客户端调用方式，我简单描述一下需求：</p>
+<p>1.对接第三方WebServcie服务接口</p>
+<p>2.由于我们生产服务器有IP和端口限制，所以调用第三方接口都需要提前一周申请权限</p>
+<h2 id="2-功能细化"><a href="#2-功能细化" class="headerlink" title="2.功能细化"></a>2.功能细化</h2><p>按照上面的需求，其实功能实现非常简单，我只需要用WebService客户端调用第三方提供的WebService服务端即可，但是事实上我在实际开发过程中却遇到了麻烦，找了大半天才发现问题所在</p>
+<h2 id="3-踩坑记录"><a href="#3-踩坑记录" class="headerlink" title="3.踩坑记录"></a>3.踩坑记录</h2><p>由于平时接触WebService的接口比较少，对WebService不熟悉，这次开发我遇到一个坑，简单描述一下就是：第三方提供的wsdl的url端口号和wsdl文档内容里边wsdlsoap:address值定的url端口号不是同一个，上面提到我们生产服务器的IP和端口是需要提前申请开通（申请开通了9083端口），如果没有申请那么网络是不通的，这就导致了，我在生产服务器curl第三方的wsdl的url是可以获取到内容，但是我代码（动态xfire方式）访问第三的wsdl服务是网络超时。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">//wsdl的url</span><br><span class="line">http://www.freebie5:9083/freebie5/services/freebie5service</span><br><span class="line"></span><br><span class="line">//wsdl的文档内容</span><br><span class="line"><span class="tag">&lt;<span class="name">wsdl:definitions</span> <span class="attr">xmlns:soapenc12</span>=<span class="string">"http://www.w3.org/2003/05/soap-encoding"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">xmlns:wsdl</span>=<span class="string">"http://schemas.xmlsoap.org/wsdl/"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">xmlns:tns</span>=<span class="string">"http://webservice.freebie5.com"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">xmlns:xsd</span>=<span class="string">"http://www.w3.org/2001/XMLSchema"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">xmlns:soap11</span>=<span class="string">"http://schemas.xmlsoap.org/soap/envelope/"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">xmlns:soap12</span>=<span class="string">"http://www.w3.org/2003/05/soap-envelope"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">xmlns:wsdlsoap</span>=<span class="string">"http://schemas.xmlsoap.org/wsdl/soap/"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">xmlns:soapenc11</span>=<span class="string">"http://schemas.xmlsoap.org/soap/encoding/"</span></span></span><br><span class="line"><span class="tag">                  <span class="attr">targetNamespace</span>=<span class="string">"http://webservice.freebie5.com"</span>&gt;</span></span><br><span class="line">	</span><br><span class="line">    //省略其他信息</span><br><span class="line">    ...</span><br><span class="line">	</span><br><span class="line">    <span class="tag">&lt;<span class="name">wsdl:service</span> <span class="attr">name</span>=<span class="string">"freebie5service"</span>&gt;</span></span><br><span class="line">    	<span class="tag">&lt;<span class="name">wsdl:port</span> <span class="attr">name</span>=<span class="string">"freebie5serviceHttpPort"</span> <span class="attr">binding</span>=<span class="string">"tns:freebie5serviceHttpBinding"</span>&gt;</span></span><br><span class="line">        	<span class="tag">&lt;<span class="name">wsdlsoap:address</span> <span class="attr">location</span>=<span class="string">"http://www.freebie5:9080/freebie5/services/freebie5service"</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">wsdl:port</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">wsdl:service</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">wsdl:definitions</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="4-踩坑后的总结"><a href="#4-踩坑后的总结" class="headerlink" title="4.踩坑后的总结"></a>4.踩坑后的总结</h2><p>这个坑解决方案有三种，但是当时由于对WebService不熟悉，第三种方法我当时没有想到</p>
+<p>1.申请开通9080端口，但是需要1周时间</p>
+<p>2.第三方修改wsdl文档，把wsdlsoap:address的端口号修改为9083</p>
+<p>3.使用动态Axis方式调用</p>
+<p>关于第三种方式我重点说一下</p>
+<p>刚开始我是使用了动态Xfire的方式调用，由于动态Xfire需要解析wsdl文档获取接口入参和目标服务地址wsdlsoap:address，从而Xfire实际上请求的端口号是9080，所以我一直请求超时。</p>
+<p>明白问题所在之后，我换了种调用方式，动态Axis方式，由于动态Axis方式需要指定入参名称，所以没有解析wsdl文档导致请求错误端口的问题，最终可以成功调用服务。</p>
+<h2 id="5-几种WebServie客户端调用方式"><a href="#5-几种WebServie客户端调用方式" class="headerlink" title="5.几种WebServie客户端调用方式"></a>5.几种WebServie客户端调用方式</h2><p>这几种方式都是动态调用的方式</p>
+<p>项目git路径：<a href="https://github.com/freebie5/WebServiceDemo.git" target="_blank" rel="noopener">https://github.com/freebie5/WebServiceDemo.git</a></p>
+<h4 id="5-1-Axis动态调用"><a href="#5-1-Axis动态调用" class="headerlink" title="5.1.Axis动态调用"></a>5.1.Axis动态调用</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.axis.client.Call;</span><br><span class="line"><span class="keyword">import</span> org.apache.axis.client.Service;</span><br><span class="line"><span class="keyword">import</span> org.apache.axis.encoding.XMLType;</span><br><span class="line"><span class="keyword">import</span> javax.xml.namespace.QName;</span><br><span class="line"><span class="keyword">import</span> javax.xml.rpc.ParameterMode;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AxisUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 动态Axis方式</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> inputParams</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getResult</span><span class="params">(String url, String method, String namespace,</span></span></span><br><span class="line"><span class="function"><span class="params">                                         List&lt;Map&lt;String,Object&gt;&gt; inputParams)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Service service = <span class="keyword">new</span> Service();</span><br><span class="line">        Call call = (Call) service.createCall();</span><br><span class="line">        call.setTargetEndpointAddress(url);</span><br><span class="line">        call.setOperationName(<span class="keyword">new</span> QName(namespace, method));</span><br><span class="line">        call.setUseSOAPAction(<span class="keyword">true</span>);</span><br><span class="line">        call.setSOAPActionURI(namespace+method);</span><br><span class="line">        call.setTimeout(<span class="number">30</span>*<span class="number">1000</span>);</span><br><span class="line"><span class="comment">//        call.setReturnType(XMLType.XSD_STRING);</span></span><br><span class="line">        List&lt;Object&gt; values = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">if</span>(inputParams!=<span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span>(Map&lt;String,Object&gt; inputParam:inputParams) &#123;</span><br><span class="line">                String paramName = (String)inputParam.get(<span class="string">"paramName"</span>);</span><br><span class="line">                QName paramValueType = (QName)inputParam.get(<span class="string">"paramValueType"</span>);</span><br><span class="line">                call.addParameter(paramName, paramValueType, ParameterMode.IN);</span><br><span class="line">                Object paramValue = inputParam.get(<span class="string">"paramValue"</span>);</span><br><span class="line">                values.add(paramValue);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 调用服务</span></span><br><span class="line">        <span class="keyword">return</span> call.invoke(values.toArray());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>axis<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.4<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-2-Axis2动态调用"><a href="#5-2-Axis2动态调用" class="headerlink" title="5.2.Axis2动态调用"></a>5.2.Axis2动态调用</h4><p>对于一些最新的WebService服务端，需要设置SOAPAction，但是Axis有个bug设置不了SOAPAction，会报以下错误，目前我还没有找到办法解决，所以，如果遇到一下错误，建议使用Axis2</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">org.apache.axis.AxisFault: 服务器无法处理请求。 ---&gt; 未将对象引用设置到对象的实例。</span><br><span class="line">	at org.apache.axis.message.SOAPFaultBuilder.createFault(SOAPFaultBuilder.java:222)</span><br><span class="line">	at org.apache.axis.message.SOAPFaultBuilder.endElement(SOAPFaultBuilder.java:129)</span><br><span class="line">	at org.apache.axis.encoding.DeserializationContext.endElement(DeserializationContext.java:1087)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.endElement(AbstractSAXParser.java:609)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanEndElement(XMLDocumentFragmentScannerImpl.java:1782)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl$FragmentContentDriver.next(XMLDocumentFragmentScannerImpl.java:2973)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.impl.XMLDocumentScannerImpl.next(XMLDocumentScannerImpl.java:606)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.impl.XMLNSDocumentScannerImpl.next(XMLNSDocumentScannerImpl.java:117)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.impl.XMLDocumentFragmentScannerImpl.scanDocument(XMLDocumentFragmentScannerImpl.java:510)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:848)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.parsers.XML11Configuration.parse(XML11Configuration.java:777)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.parsers.XMLParser.parse(XMLParser.java:141)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.parsers.AbstractSAXParser.parse(AbstractSAXParser.java:1213)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl$JAXPSAXParser.parse(SAXParserImpl.java:649)</span><br><span class="line">	at com.sun.org.apache.xerces.internal.jaxp.SAXParserImpl.parse(SAXParserImpl.java:333)</span><br><span class="line">	at org.apache.axis.encoding.DeserializationContext.parse(DeserializationContext.java:227)</span><br><span class="line">	at org.apache.axis.SOAPPart.getAsSOAPEnvelope(SOAPPart.java:696)</span><br><span class="line">	at org.apache.axis.Message.getSOAPEnvelope(Message.java:435)</span><br><span class="line">	at org.apache.axis.transport.http.HTTPSender.readFromSocket(HTTPSender.java:796)</span><br><span class="line">	at org.apache.axis.transport.http.HTTPSender.invoke(HTTPSender.java:144)</span><br><span class="line">	at org.apache.axis.strategies.InvocationStrategy.visit(InvocationStrategy.java:32)</span><br><span class="line">	at org.apache.axis.SimpleChain.doVisiting(SimpleChain.java:118)</span><br><span class="line">	at org.apache.axis.SimpleChain.invoke(SimpleChain.java:83)</span><br><span class="line">	at org.apache.axis.client.AxisClient.invoke(AxisClient.java:165)</span><br><span class="line">	at org.apache.axis.client.Call.invokeEngine(Call.java:2784)</span><br><span class="line">	at org.apache.axis.client.Call.invoke(Call.java:2767)</span><br><span class="line">	at org.apache.axis.client.Call.invoke(Call.java:2443)</span><br><span class="line">	at org.apache.axis.client.Call.invoke(Call.java:2366)</span><br><span class="line">	at org.apache.axis.client.Call.invoke(Call.java:1812)</span><br><span class="line">	at com.example.demo.util.AxisUtil.getResult(AxisUtil.java:43)</span><br><span class="line">	at com.example.demo.util.Main.getResultByAxis(Main.java:74)</span><br><span class="line">	at com.example.demo.util.Main.main(Main.java:24)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.axiom.om.OMAbstractFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.axiom.om.OMElement;</span><br><span class="line"><span class="keyword">import</span> org.apache.axiom.om.OMFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.axiom.om.OMNamespace;</span><br><span class="line"><span class="keyword">import</span> org.apache.axis2.addressing.EndpointReference;</span><br><span class="line"><span class="keyword">import</span> org.apache.axis2.client.Options;</span><br><span class="line"><span class="keyword">import</span> org.apache.axis2.client.ServiceClient;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Axis2Util</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">getResult</span><span class="params">(String url, String methodName, String namespaceStr,</span></span></span><br><span class="line"><span class="function"><span class="params">                                   List&lt;Map&lt;String,Object&gt;&gt; inputParams)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        EndpointReference endpointReference = <span class="keyword">new</span> EndpointReference(url);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//创建一个OMFactory，命名空旧，方法，参数都由它创建</span></span><br><span class="line">        OMFactory factory = OMAbstractFactory.getOMFactory();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//创建命名空间，如果你的WebService指定了targetNamespace属性的话，就要用这个</span></span><br><span class="line">        <span class="comment">//对应于@WebService(targetNamespace = "http://WebXml.com.cn/")</span></span><br><span class="line">        OMNamespace omNamespace = factory.createOMNamespace(namespaceStr, <span class="string">"xsd"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//创建一个method对象，"qqCheckOnline"为方法名</span></span><br><span class="line">        OMElement method = factory.createOMElement(methodName, omNamespace);</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;inputParams.size();i++) &#123;</span><br><span class="line">            String paramName = (String)inputParams.get(<span class="number">0</span>).get(<span class="string">"paramName"</span>);</span><br><span class="line">            String paramValue = (String)inputParams.get(<span class="number">0</span>).get(<span class="string">"paramValue"</span>);</span><br><span class="line">            <span class="comment">//创建参数，对应于@WebParam(name = "qqCode")</span></span><br><span class="line">            <span class="comment">//由于@WebParam没有指定targetNamespace，所以下面创建name参数时，用了null，否则你得赋一个namespace给它</span></span><br><span class="line">            OMElement nameElement = factory.createOMElement(paramName, omNamespace);</span><br><span class="line">            nameElement.addChild(factory.createOMText(nameElement, paramValue));</span><br><span class="line">            <span class="comment">//将入参设置到method</span></span><br><span class="line">            method.addChild(nameElement);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置配置参数</span></span><br><span class="line">        Options options = <span class="keyword">new</span> Options();</span><br><span class="line">        <span class="comment">//此处对应于@WebMethod(action = "http://WebXml.com.cn/qqCheckOnline")</span></span><br><span class="line">        options.setAction(namespaceStr+methodName);</span><br><span class="line">        options.setTo(endpointReference);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//创建客户端，并调用</span></span><br><span class="line">        ServiceClient client = <span class="keyword">new</span> ServiceClient();</span><br><span class="line">        client.setOptions(options);</span><br><span class="line">        OMElement result = client.sendReceive(method);</span><br><span class="line">        <span class="keyword">return</span> result.toString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.axis2<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axis2<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.9<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.axis2<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axis2-kernel<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.9<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.axis2<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axis2-transport-http<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.9<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.axis2<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axis2-transport-local<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.9<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.axis2<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>axis2-adb<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.7.9<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-3-Xfire动态调用"><a href="#5-3-Xfire动态调用" class="headerlink" title="5.3.Xfire动态调用"></a>5.3.Xfire动态调用</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.codehaus.xfire.client.Client;</span><br><span class="line"><span class="keyword">import</span> java.net.URL;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XfireUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 动态Xfire方式</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> inputParams</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getResult</span><span class="params">(String url,String method,</span></span></span><br><span class="line"><span class="function"><span class="params">                                          List&lt;Object&gt; inputParams)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Client client = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            client =  <span class="keyword">new</span> Client(<span class="keyword">new</span> URL(url));</span><br><span class="line">            client.setTimeout(<span class="number">30</span>*<span class="number">1000</span>);</span><br><span class="line">            Object[] resultArr = client.invoke(method, inputParams.toArray());</span><br><span class="line">            <span class="keyword">return</span> resultArr[<span class="number">0</span>];</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(client!=<span class="keyword">null</span>) &#123;</span><br><span class="line">                client.close();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.codehaus.xfire<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>xfire-core<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.codehaus.xfire<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>xfire-aegis<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.2.6<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-4-Cxf动态调用"><a href="#5-4-Cxf动态调用" class="headerlink" title="5.4.Cxf动态调用"></a>5.4.Cxf动态调用</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.cxf.endpoint.Client;</span><br><span class="line"><span class="keyword">import</span> org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;</span><br><span class="line"><span class="keyword">import</span> org.apache.cxf.transport.http.HTTPConduit;</span><br><span class="line"><span class="keyword">import</span> org.apache.cxf.transports.http.configuration.HTTPClientPolicy;</span><br><span class="line"><span class="keyword">import</span> javax.xml.namespace.QName;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CxfUtil</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 动态Cxf方式</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> url</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> nameSpace</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> method</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> inputParams</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span></span></span><br><span class="line"><span class="comment">     * <span class="doctag">@throws</span> Exception</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getResult</span><span class="params">(String url, String nameSpace, String method,</span></span></span><br><span class="line"><span class="function"><span class="params">                                        List&lt;Object&gt; inputParams)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        JaxWsDynamicClientFactory dcf = JaxWsDynamicClientFactory.newInstance();</span><br><span class="line">        Client client = dcf.createClient(url);</span><br><span class="line">        <span class="comment">// 设置超时单位为毫秒</span></span><br><span class="line">        HTTPConduit conduit = (HTTPConduit)client.getConduit();</span><br><span class="line">        HTTPClientPolicy policy = <span class="keyword">new</span> HTTPClientPolicy();</span><br><span class="line">        policy.setConnectionTimeout(<span class="number">30</span>*<span class="number">1000</span>);</span><br><span class="line">        policy.setAllowChunking(<span class="keyword">false</span>);</span><br><span class="line">        policy.setReceiveTimeout(<span class="number">30</span>*<span class="number">1000</span>);</span><br><span class="line">        conduit.setClient(policy);</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        QName name = <span class="keyword">new</span> QName(nameSpace, method);</span><br><span class="line">        Object[] object = client.invoke(name, inputParams.toArray());</span><br><span class="line">        <span class="keyword">return</span> object[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>依赖</p>
+<p>如果使用cxf的依赖，则不可以使用xfire的依赖和axis的依赖，因为cxf的依赖和这两种方式的依赖冲突，切记！</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.cxf<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cxf-rt-frontend-jaxws<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.7<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.cxf<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cxf-rt-transports-http<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.7<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.cxf<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>cxf-rt-transports-http-jetty<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>3.3.7<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-5-HttpClient调用"><a href="#5-5-HttpClient调用" class="headerlink" title="5.5.HttpClient调用"></a>5.5.HttpClient调用</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.http.HttpEntity;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.client.config.RequestConfig;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.client.methods.CloseableHttpResponse;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.client.methods.HttpPost;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.entity.StringEntity;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.impl.client.CloseableHttpClient;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.impl.client.HttpClients;</span><br><span class="line"><span class="keyword">import</span> org.apache.http.util.EntityUtils;</span><br><span class="line"><span class="keyword">import</span> org.dom4j.Document;</span><br><span class="line"><span class="keyword">import</span> org.dom4j.DocumentHelper;</span><br><span class="line"><span class="keyword">import</span> org.dom4j.Element;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HttpClient4Util</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getResult</span><span class="params">(String url, String method, String resultTag, String namespace,</span></span></span><br><span class="line"><span class="function"><span class="params">                                                List&lt;Map&lt;String,Object&gt;&gt; inputParams)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//拼接请求体</span></span><br><span class="line">        StringBuilder requestContent = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">        requestContent.append(<span class="string">"&lt;soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:web=\""</span>+namespace+<span class="string">"\"&gt;"</span>);</span><br><span class="line">        requestContent.append(<span class="string">"&lt;soapenv:Header/&gt;"</span>);</span><br><span class="line">        requestContent.append(<span class="string">"&lt;soapenv:Body&gt;"</span>);</span><br><span class="line">        requestContent.append(<span class="string">"&lt;web:"</span>+method+<span class="string">"&gt;"</span>);</span><br><span class="line">        <span class="keyword">if</span>(inputParams!=<span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">0</span>;i&lt;inputParams.size();i++) &#123;</span><br><span class="line">                String paramName = (String)inputParams.get(i).get(<span class="string">"paramName"</span>);</span><br><span class="line">                String paramValue = (String)inputParams.get(i).get(<span class="string">"paramValue"</span>);</span><br><span class="line">                requestContent.append(<span class="string">"&lt;web:"</span>+paramName+<span class="string">"&gt;"</span>+paramValue+<span class="string">"&lt;/web:"</span>+paramName+<span class="string">"&gt;"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        requestContent.append(<span class="string">"&lt;/web:"</span>+method+<span class="string">"&gt;"</span>);</span><br><span class="line">        requestContent.append(<span class="string">"&lt;/soapenv:Body&gt;"</span>);</span><br><span class="line">        requestContent.append(<span class="string">"&lt;/soapenv:Envelope&gt;"</span>);</span><br><span class="line">        <span class="comment">//调用</span></span><br><span class="line">        <span class="comment">//创建请求</span></span><br><span class="line">        CloseableHttpClient httpClient = HttpClients.createDefault();</span><br><span class="line">        HttpPost httpPost = <span class="keyword">new</span> HttpPost(url);</span><br><span class="line">        <span class="comment">//设置超时</span></span><br><span class="line">        RequestConfig requestConfig = RequestConfig.custom()</span><br><span class="line">                .setConnectTimeout(<span class="number">30</span>*<span class="number">1000</span>)<span class="comment">// 设置连接主机服务超时时间</span></span><br><span class="line">                .setConnectionRequestTimeout(<span class="number">30</span>*<span class="number">1000</span>)<span class="comment">// 设置连接请求超时时间</span></span><br><span class="line">                .setSocketTimeout(<span class="number">30</span>*<span class="number">1000</span>)<span class="comment">// 设置读取数据连接超时时间</span></span><br><span class="line">                .build();</span><br><span class="line">        httpPost.setConfig(requestConfig);</span><br><span class="line">        <span class="comment">//设置请求头</span></span><br><span class="line">        httpPost.addHeader(<span class="string">"Content-Type"</span>, <span class="string">"text/xml;charset=UTF-8"</span>);</span><br><span class="line">        <span class="comment">//封装post请求参数</span></span><br><span class="line">        httpPost.setEntity(<span class="keyword">new</span> StringEntity(requestContent.toString(), <span class="string">"UTF-8"</span>));</span><br><span class="line">        CloseableHttpResponse httpResponse = <span class="keyword">null</span>;</span><br><span class="line">        String result = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//httpClient对象执行post请求，并返回响应参数对象</span></span><br><span class="line">            httpResponse = httpClient.execute(httpPost);</span><br><span class="line">            <span class="comment">// 从响应对象中获取响应内容</span></span><br><span class="line">            HttpEntity entity = httpResponse.getEntity();</span><br><span class="line">            result = EntityUtils.toString(entity);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line"><span class="comment">//            logger.error(e.getMessage(), e);</span></span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// 关闭资源</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">null</span> != httpResponse) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    httpResponse.close();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line"><span class="comment">//                    logger.error(e.getMessage(), e);</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">null</span> != httpClient) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    httpClient.close();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line"><span class="comment">//                    logger.error(e.getMessage(), e);</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//获取结果</span></span><br><span class="line">        Document doc = DocumentHelper.parseText(result);</span><br><span class="line">        Element root = doc.getRootElement();</span><br><span class="line">        <span class="keyword">return</span> root.element(<span class="string">"Body"</span>).element(method+<span class="string">"Response"</span>).element(resultTag);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.httpcomponents<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>httpclient<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.5.12<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="5-6-测试"><a href="#5-6-测试" class="headerlink" title="5.6.测试"></a>5.6.测试</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.example.demo.util;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.axis.encoding.XMLType;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String METHOD = <span class="string">"getCountryCityByIp"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String RESULT_TAG = <span class="string">"getCountryCityByIpResult"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String NAME_SPACE = <span class="string">"http://WebXml.com.cn/"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> String WSDL = <span class="string">"http://www.webxml.com.cn/WebServices/IpAddressSearchWebService.asmx?wsdl"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Main.getResultByHttpClient4();</span><br><span class="line">        Main.getResultByCxf();</span><br><span class="line">        Main.getResultByXfire();</span><br><span class="line">        Main.getResultByAxis();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByHttpClient4</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL.replace(<span class="string">"?wsdl"</span>,<span class="string">""</span>);<span class="comment">//不需要?wsdl后缀;</span></span><br><span class="line">        String method = METHOD;</span><br><span class="line">        String resultTag = RESULT_TAG;</span><br><span class="line">        String namespace = NAME_SPACE;</span><br><span class="line">        List&lt;Map&lt;String,Object&gt;&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Map&lt;String,Object&gt; param0 = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        param0.put(<span class="string">"paramName"</span>, <span class="string">"theIpAddress"</span>);</span><br><span class="line">        param0.put(<span class="string">"paramValue"</span>, <span class="string">"183.54.42.103"</span>);</span><br><span class="line">        inputParams.add(param0);</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Object result = HttpClient4Util.getResult(url, method, resultTag, namespace, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByCxf</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL;</span><br><span class="line">        String nameSpace = NAME_SPACE;</span><br><span class="line">        String method = METHOD;</span><br><span class="line">        List&lt;Object&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        inputParams.add(<span class="string">"183.54.42.103"</span>);</span><br><span class="line">        Object result = CxfUtil.getResult(url, nameSpace, method, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByXfire</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL;</span><br><span class="line">        String method = METHOD;</span><br><span class="line">        List&lt;Object&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        inputParams.add(<span class="string">"183.54.42.103"</span>);</span><br><span class="line">        Object result = XfireUtil.getResult(url, method, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByAxis</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String url = WSDL.replace(<span class="string">"?wsdl"</span>,<span class="string">""</span>);<span class="comment">//不需要?wsdl后缀</span></span><br><span class="line">        String method = METHOD;</span><br><span class="line">        String namespace = NAME_SPACE;</span><br><span class="line">        List&lt;Map&lt;String,Object&gt;&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Map&lt;String,Object&gt; inputParam0 = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        inputParam0.put(<span class="string">"paramName"</span>, <span class="string">"theIpAddress"</span>);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValueType"</span>, XMLType.XSD_STRING);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValue"</span>, <span class="string">"183.54.42.103"</span>);</span><br><span class="line">        inputParams.add(inputParam0);</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Object result = AxisUtil.getResult(url, method, namespace, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">getResultByAxis2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        String url = WSDL.replace(<span class="string">"?wsdl"</span>,<span class="string">""</span>);<span class="comment">//不需要?wsdl后缀</span></span><br><span class="line">        String method = METHOD;</span><br><span class="line">        String namespace = NAME_SPACE;</span><br><span class="line">        List&lt;Map&lt;String,Object&gt;&gt; inputParams = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        Map&lt;String,Object&gt; inputParam0 = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">        inputParam0.put(<span class="string">"paramName"</span>, <span class="string">"theIpAddress"</span>);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValueType"</span>, XMLType.XSD_STRING);</span><br><span class="line">        inputParam0.put(<span class="string">"paramValue"</span>, <span class="string">"183.54.42.103"</span>);</span><br><span class="line">        inputParams.add(inputParam0);</span><br><span class="line">        String result = Axis2Util.getResult(url, method, namespace, inputParams);</span><br><span class="line">        System.out.println(result);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-引用"><a href="#6-引用" class="headerlink" title="6.引用"></a>6.引用</h2><p><a href="https://www.iteye.com/blog/gavin-chen-336727" target="_blank" rel="noopener">https://www.iteye.com/blog/gavin-chen-336727</a></p>
+<p>用于测试的在线wsdl：</p>
+<p><a href="https://www.cnblogs.com/yuxuan/archive/2010/10/27/1862669.html" target="_blank" rel="noopener">https://www.cnblogs.com/yuxuan/archive/2010/10/27/1862669.html</a></p>
+<p><a href="http://www.webxml.com.cn/WebServices/IpAddressSearchWebService.asmx?wsdl" target="_blank" rel="noopener">http://www.webxml.com.cn/WebServices/IpAddressSearchWebService.asmx?wsdl</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">日常开发</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">WebService</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/日常开发记录//" class="article-tag-list-link color2">日常开发记录</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/19/WebService%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%9A%84%E5%87%A0%E7%A7%8D%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-基于http的长轮询简单实现" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/18/%E5%9F%BA%E4%BA%8Ehttp%E7%9A%84%E9%95%BF%E8%BD%AE%E8%AF%A2%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/">基于http的长轮询简单实现</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/18/%E5%9F%BA%E4%BA%8Ehttp%E7%9A%84%E9%95%BF%E8%BD%AE%E8%AF%A2%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/" class="archive-article-date">
+  	<time datetime="2020-07-18T14:06:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-18</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-需求场景"><a href="#1-需求场景" class="headerlink" title="1.需求场景"></a>1.需求场景</h2><p>公司最近有个开发任务，需要对接第三方接口，涉及到长轮询的，我简单描述一下需求：</p>
+<p>1.请求第三方的二维码凭证接口获取凭证qrCodeKey，用qrCodeKey作为参数生成链接，例如：</p>
+<p><a href="http://www.freebie5.com?qrCodeKey=123456" target="_blank" rel="noopener">http://www.freebie5.com?qrCodeKey=123456</a></p>
+<p>然后，把链接作为内容，生成二维码</p>
+<p>2.用户手机扫描二维码访问链接，进行授权</p>
+<p>3.如果用户授权，那么第三方会把该用户的授权信息推送给我的后台接口</p>
+<p>4.如果后台接收到授权信息，那么前端页面立即跳转，实现授权登录</p>
+<h2 id="2-功能细化"><a href="#2-功能细化" class="headerlink" title="2.功能细化"></a>2.功能细化</h2><p>按照上面的需求描述，我把功能细化为3个接口：</p>
+<p>1.生成二维码的接口</p>
+<p>2.提供给第三方调用的接收授权信息的接口</p>
+<p>3.长轮询接口，当后台收到第三方推送的授权信息，前端页面马上就能跳转</p>
+<p>下面我重点说明一下长轮询接口，其他两个接口我简单说明一下</p>
+<h3 id="2-1生成二维码接口"><a href="#2-1生成二维码接口" class="headerlink" title="2.1生成二维码接口"></a>2.1生成二维码接口</h3><p>前端调用生成二维码接口，该接口就会生成一个业务流水号busNo作为入参调用第三方二维码凭证接口，获取二维码凭证qrCodeKey，用qrCodeKey作为参数生成链接，最后把链接作为二维码的内容，生成二维码，最后再把二维码的base64字符串和busNo返回给前端，前端直接展示二维码。同时记录一笔业务日志</p>
+<h3 id="2-2接收授权信息接口"><a href="#2-2接收授权信息接口" class="headerlink" title="2.2接收授权信息接口"></a>2.2接收授权信息接口</h3><p>第三方把授权信息json和busNo推送给我，我把busNo作为key，授权信息作为value，存储到redis缓存，同时记录一笔业务日志</p>
+<h3 id="2-3长轮询接口"><a href="#2-3长轮询接口" class="headerlink" title="2.3长轮询接口"></a>2.3长轮询接口</h3><p>前端页面调用长轮询接口，把busNo作为入参传给后台，后台以busNo作为key查询redis缓存，如果查询不到value，则暂停1秒后重试，如果超过15秒后还是没有value，则返回超时提示；如果查询到value，则直接返回授权信息</p>
+<h4 id="2-3-1前端demo"><a href="#2-3-1前端demo" class="headerlink" title="2.3.1前端demo"></a>2.3.1前端demo</h4><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">longPolling</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> data = &#123;</span><br><span class="line">        busNo: <span class="string">"123456"</span>;<span class="comment">//业务流水号</span></span><br><span class="line">    &#125;;</span><br><span class="line">    $.ajax(&#123;</span><br><span class="line">        <span class="keyword">async</span>: <span class="literal">true</span>,<span class="comment">//异步</span></span><br><span class="line">        headers: headers,<span class="comment">//请求头</span></span><br><span class="line">        url: url,<span class="comment">//路径</span></span><br><span class="line">        type: <span class="string">'post'</span>,</span><br><span class="line">        dataType: <span class="string">'json'</span>,</span><br><span class="line">        data: data,</span><br><span class="line">        timeout: <span class="number">30000</span>,<span class="comment">//超时时间设定30秒</span></span><br><span class="line">        error: <span class="function">(<span class="params">Xhr, textStatus, thrownError</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="comment">//失败，重试</span></span><br><span class="line">            <span class="keyword">this</span>.longPolling();<span class="comment">//发生异常错误后再次发起请求</span></span><br><span class="line">        &#125;,</span><br><span class="line">        success: <span class="function">(<span class="params">response</span>) =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="comment">//成功) &#123;</span></span><br><span class="line">                <span class="comment">//跳转页面</span></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//超时，重试</span></span><br><span class="line">                <span class="keyword">this</span>.longPolling();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-2后台demo"><a href="#2-3-2后台demo" class="headerlink" title="2.3.2后台demo"></a>2.3.2后台demo</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TIMEOUT = <span class="number">15</span> * <span class="number">1000</span>;<span class="comment">//15秒</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> JSONObject <span class="title">getInfo</span><span class="params">(String busNo)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    JSONObject result = <span class="keyword">new</span> JSONObject();</span><br><span class="line">    <span class="comment">//授权信息</span></span><br><span class="line">    JSONObject infoResult = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">long</span> requestTime = System.currentTimeMillis();</span><br><span class="line">    <span class="keyword">while</span> ((System.currentTimeMillis() - requestTime) &lt; TIMEOUT) &#123;</span><br><span class="line">        <span class="comment">//查询redis缓存，获取授权信息</span></span><br><span class="line">        infoResult = getInfoResultByRedis(busNo);</span><br><span class="line">        <span class="keyword">if</span> (infoResult!=<span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">break</span>;<span class="comment">// 跳出循环，返回数据</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);<span class="comment">// 休眠1秒</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (infoResult==<span class="keyword">null</span>) &#123;</span><br><span class="line">        result.put(<span class="string">"state"</span>, <span class="string">"0"</span>);</span><br><span class="line">        result.put(<span class="string">"msg"</span>, <span class="string">"超时"</span>);</span><br><span class="line">        result.put(<span class="string">"infoResult"</span>, <span class="keyword">new</span> JSONObject());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        result.put(<span class="string">"state"</span>, <span class="string">"1"</span>);</span><br><span class="line">        result.put(<span class="string">"msg"</span>, <span class="string">"成功"</span>);</span><br><span class="line">        result.put(<span class="string">"infoResult"</span>, infoResult);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-引用"><a href="#3-引用" class="headerlink" title="3.引用"></a>3.引用</h2><p><a href="https://blog.csdn.net/ddwddw4/article/details/95060303" target="_blank" rel="noopener">https://blog.csdn.net/ddwddw4/article/details/95060303</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">日常开发</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">js</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">java</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/日常开发记录//" class="article-tag-list-link color2">日常开发记录</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/18/%E5%9F%BA%E4%BA%8Ehttp%E7%9A%84%E9%95%BF%E8%BD%AE%E8%AF%A2%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-遍历二叉树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/06/12/%E9%81%8D%E5%8E%86%E4%BA%8C%E5%8F%89%E6%A0%91/">遍历二叉树</a>
+    </h1>
+  
+
+        
+        <a href="/2020/06/12/%E9%81%8D%E5%8E%86%E4%BA%8C%E5%8F%89%E6%A0%91/" class="archive-article-date">
+  	<time datetime="2020-06-12T12:57:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-06-12</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-二叉树的定义"><a href="#1-二叉树的定义" class="headerlink" title="1.二叉树的定义"></a>1.二叉树的定义</h2><p>每个节点之多只有2棵子树，并且二叉树的子树只有左右之分，左右子树次序不能任意颠倒</p>
+<h2 id="2-遍历二叉树"><a href="#2-遍历二叉树" class="headerlink" title="2.遍历二叉树"></a>2.遍历二叉树</h2><p>假设以L，D，R分别表示遍历左子树，访问根节点，遍历右子树，则可有DLR，LDR，LRD，DRL，RDL，RLD这6种遍历二叉树的方案。若限定先左后右，则只有前3种情况，分别称为：先序遍历，中序遍历，后序遍历</p>
+<p>下图是一棵二叉树，下面分别介绍这棵二叉树的3种遍历</p>
+<p><img src="/assets/blogImg/遍历二叉树_01.png" width="500"></p>
+
+<h3 id="先序遍历"><a href="#先序遍历" class="headerlink" title="先序遍历"></a>先序遍历</h3><p>1，2，4，6，7，3，5</p>
+<h3 id="中序遍历"><a href="#中序遍历" class="headerlink" title="中序遍历"></a>中序遍历</h3><p>4，6，7，2，1，5，3</p>
+<h3 id="后序遍历"><a href="#后序遍历" class="headerlink" title="后序遍历"></a>后序遍历</h3><p>7，6，4，2，5，3，1</p>
+<h2 id="3-拓展"><a href="#3-拓展" class="headerlink" title="3.拓展"></a>3.拓展</h2><h3 id="根据先序遍历和中序遍历推导树的结构"><a href="#根据先序遍历和中序遍历推导树的结构" class="headerlink" title="根据先序遍历和中序遍历推导树的结构"></a>根据先序遍历和中序遍历推导树的结构</h3><p>已知：<br>前序遍历: GDAFEMHZ<br>中序遍历: ADEFGHMZ<br>求后序遍历</p>
+<p>1）由前序遍历的特点可以知道根节点第一个被访问，则G是根节点；由中序遍历的特点可以知道，根节点G左边的节点ADEF是左子树的节点，根节点G右边的节点HMZ是右子树的</p>
+<p>节点；</p>
+<p>3）分析左子树结构，由前序遍历的特点可以知道左子树的根节点第二个被访问，则D是左子树的根节点；D左边只有A一个节点；D右边有FE，根据前序遍历（中左右）可以推断E是F的左节点，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_02.png" width="300"></p>
+
+<p>4）分析右子树结构。根据前序遍历特点M第一个被访问，所以M是右子树的根节点；在中序遍历中H在M左边，所以是M的左节点，Z在M的右边，所以是右节点，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_03.png" width="150"></p>
+
+<p>最终得到完整的树结构，如下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_04.png" width="300"></p>
+
+<h3 id="根据中序遍历和后续遍历推导树的结构"><a href="#根据中序遍历和后续遍历推导树的结构" class="headerlink" title="根据中序遍历和后续遍历推导树的结构"></a>根据中序遍历和后续遍历推导树的结构</h3><p>已知：</p>
+<p>中序遍历：ADEFGHMZ<br>后序遍历：AEFDHZMG</p>
+<p>求后序遍历</p>
+<p>1）由后序遍历特点可以知道根节点最后被访问，所以G是根节点；由中序遍历特点可以知道，G左边的节点ADEF是左子树的节点，G右边的节点HMZ是右子树的节点；</p>
+<p>2）分析左子树结构。在后序遍历中D最后一个被访问，所以D是左子树根节点；在中序遍历中D左边一个节点A，所以A是D的左节点；D右边两个节点EF，根据中序遍历的特点E第一个被访问，所以E是根节点，F是E的左节点，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_02.png" width="300"></p>
+
+<p>3）分析右子树结构。根据后续遍历的特点，M最后被访问，所以M是右子树根节点；根据中序遍历特点，M左边一个节点H，M右边一个节点Z，得到下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_03.png" width="150"></p>
+
+<p>最终得到完整的树结构，如下图</p>
+<p><img src="/assets/blogImg/遍历二叉树_04.png" width="300"></p>
+
+<h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://www.jianshu.com/p/1c50b23fcc30" target="_blank" rel="noopener">https://www.jianshu.com/p/1c50b23fcc30</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">二叉树</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">先序遍历</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">中序遍历</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">后序遍历</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/数据结构//" class="article-tag-list-link color5">数据结构</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/06/12/%E9%81%8D%E5%8E%86%E4%BA%8C%E5%8F%89%E6%A0%91/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-Java并发编程之Fork-Join框架" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BFork-Join%E6%A1%86%E6%9E%B6/">Java并发编程之Fork/Join框架</a>
+    </h1>
+  
+
+        
+        <a href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BFork-Join%E6%A1%86%E6%9E%B6/" class="archive-article-date">
+  	<time datetime="2019-07-22T13:44:08.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-22</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BFork-Join%E6%A1%86%E6%9E%B6/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Java并发编程之线程池" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -446,406 +955,9 @@
 
 
   
-    <article id="post-CentOS7设置开机启动" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/02/25/CentOS7%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/">CentOS7设置开机启动</a>
-    </h1>
-  
-
-        
-        <a href="/2018/02/25/CentOS7%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/" class="archive-article-date">
-  	<time datetime="2018-02-25T07:22:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-02-25</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>以Kafka服务开机启动为示例</p>
-<h2 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h2><h3 id="1-在-etc-rc-d-init-d目录下新建开机启动脚本kafka-sh"><a href="#1-在-etc-rc-d-init-d目录下新建开机启动脚本kafka-sh" class="headerlink" title="1.在/etc/rc.d/init.d目录下新建开机启动脚本kafka.sh"></a>1.在/etc/rc.d/init.d目录下新建开机启动脚本kafka.sh</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;rc.d&#x2F;init.d</span><br><span class="line">vi kafka.sh</span><br></pre></td></tr></table></figure>
-
-<p>脚本内容如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;sh</span><br><span class="line">#chkconfig:2345 80 90</span><br><span class="line">#decription:kafkaAll</span><br><span class="line">source &#x2F;etc&#x2F;profile.d&#x2F;java_env.sh</span><br><span class="line">ti1&#x3D;&#96;date +%s&#96;</span><br><span class="line">ti2&#x3D;&#96;date +%s&#96;</span><br><span class="line">i&#x3D;$(($ti2 - $ti1 ))</span><br><span class="line"></span><br><span class="line">while [[ &quot;$i&quot; -ne &quot;10&quot; ]]</span><br><span class="line">do</span><br><span class="line">        ti2&#x3D;&#96;date +%s&#96;</span><br><span class="line">        i&#x3D;$(($ti2 - $ti1 ))</span><br><span class="line">done</span><br><span class="line">nohup &#x2F;opt&#x2F;kafka_2.13-2.5.0&#x2F;bin&#x2F;kafka-server-start.sh config&#x2F;server.properties &amp;</span><br></pre></td></tr></table></figure>
-
-<p>脚本规范说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;sh</span><br><span class="line">#chkconfig:2345 90 10</span><br><span class="line">#decription:kafkaAll</span><br><span class="line">source &#x2F;etc&#x2F;profile.d&#x2F;java_env.sh</span><br></pre></td></tr></table></figure>
-
-<p>#!/bin/sh脚本运行必要说明</p>
-<p>chkonfig后面是启动级别和优先级</p>
-<p>description后面是服务描述</p>
-<p>source /etc/profile.d/java_env.sh引入环境变量</p>
-<p>CentOS 7下使用chkconfig添加的服务无法使用/etc/profile里面的环境变量</p>
-<p>如上面脚本意思是，服务必须在运行级2，3，4，5下被启动或关闭，启动的优先级是90，停止的优先级是10。<strong>优先级范围是0－100，数字越大，优先级越低。</strong></p>
-<h3 id="2-赋予执行权限"><a href="#2-赋予执行权限" class="headerlink" title="2.赋予执行权限"></a>2.赋予执行权限</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod 777 kafka.sh</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-添加脚本到开机自动启动项目中"><a href="#3-添加脚本到开机自动启动项目中" class="headerlink" title="3.添加脚本到开机自动启动项目中"></a>3.添加脚本到开机自动启动项目中</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --add kafka.sh</span><br><span class="line">chkconfig kafkaAll.sh on</span><br></pre></td></tr></table></figure>
-
-<h3 id="4-查看自启动项目列表"><a href="#4-查看自启动项目列表" class="headerlink" title="4.查看自启动项目列表"></a>4.查看自启动项目列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --list</span><br></pre></td></tr></table></figure>
-
-<h3 id="5-移除自启动项目"><a href="#5-移除自启动项目" class="headerlink" title="5.移除自启动项目"></a>5.移除自启动项目</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkconfig --del kafka.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="Linux启动优先级"><a href="#Linux启动优先级" class="headerlink" title="Linux启动优先级"></a>Linux启动优先级</h3><p>运行级别就是操作系统当前正在运行的功能级别。这个级别从0到6 ，具有不同的功能。这些级别在/etc/inittab文件里指定。这个文件是init程序寻找的主要文件，最先运行的服务是那些放在/etc/rc.d 目录下的文件。<br>不同的运行级定义如下：(可以参考Linux里面的/etc/inittab)</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 缺省的运行级，RHS用到的级别如下：</span><br><span class="line">0 关机</span><br><span class="line">1 单用户模式</span><br><span class="line">2 无网络支持的多用户模式</span><br><span class="line">3 有网络支持的多用户模式</span><br><span class="line">4 保留，未使用</span><br><span class="line">5 有网络支持有X-Window支持的多用户模式</span><br><span class="line">6 重新引导系统，即重启</span><br><span class="line"></span><br><span class="line"># 对各个运行级的详细解释：</span><br><span class="line">0 为停机，机器关闭。</span><br><span class="line">1 为单用户模式，就像Win9x下的安全模式类似。</span><br><span class="line">2 为多用户模式，但是没有NFS支持。 </span><br><span class="line">3 为完整的多用户模式，是标准的运行级。</span><br><span class="line">4 一般不用，在一些特殊情况下可以用它来做一些事情。例如在笔记本 电脑的电池用尽时，可以切换到这个模式来做一些设置。</span><br><span class="line">5 就是X11，进到X Window系统了。</span><br><span class="line">6 为重启，运行init 6机器就会重启。</span><br></pre></td></tr></table></figure>
-
-<h3 id="CentOS-7下使用chkconfig添加服务无法使用-etc-profile里面的环境变量"><a href="#CentOS-7下使用chkconfig添加服务无法使用-etc-profile里面的环境变量" class="headerlink" title="CentOS 7下使用chkconfig添加服务无法使用/etc/profile里面的环境变量"></a>CentOS 7下使用chkconfig添加服务无法使用/etc/profile里面的环境变量</h3><p>/etc/profile为入口的，基本是登录后执行的变量，而使用chkconfig添加的服务多以守护经常运行，没有登录。</p>
-<p>CentOS 7下使用chkconfig添加的服务无法使用/etc/profile里面的环境变量，所以要想在chkconfig添加的服务里使用环境变量，只有在服务的脚本中引入变量文件，比如:source /etc/profile，但不建议引入这个文件，直接想要哪个变量引入这里面的个别脚本：/etc/profile.d/xxx.sh</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">CentOS 7</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Shell</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux相关//" class="article-tag-list-link color3">Linux相关</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/02/25/CentOS7%E8%AE%BE%E7%BD%AE%E5%BC%80%E6%9C%BA%E5%90%AF%E5%8A%A8/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-CentOS7安装ZooKeeper" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/01/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/">CentOS7安装ZooKeeper</a>
-    </h1>
-  
-
-        
-        <a href="/2018/01/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/" class="archive-article-date">
-  	<time datetime="2018-01-09T14:47:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2018-01-09</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="下载ZooKeeper"><a href="#下载ZooKeeper" class="headerlink" title="下载ZooKeeper"></a>下载ZooKeeper</h2><p>ZooKeeper官网下载：<a href="http://zookeeper.apache.org/releases.html" target="_blank" rel="noopener">http://zookeeper.apache.org/releases.html</a></p>
-<h2 id="安装ZooKeeper"><a href="#安装ZooKeeper" class="headerlink" title="安装ZooKeeper"></a>安装ZooKeeper</h2><p>安装前需要先安装JVM</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar -zvxf apache-zookeeper-3.5.7-bin.tar.gz</span><br><span class="line">cd apache-zookeeper-3.5.7-bin</span><br></pre></td></tr></table></figure>
-
-<p>修改配置文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cd config</span><br><span class="line">cp zoo_sample.cfg zoo.cfg</span><br><span class="line">vi zoo.cfg</span><br></pre></td></tr></table></figure>
-
-<p>修改如下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dataDir&#x3D;&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;dataDir</span><br><span class="line">dataLogDir&#x3D;&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;dataLogDir</span><br></pre></td></tr></table></figure>
-
-<h2 id="启动ZooKeeper"><a href="#启动ZooKeeper" class="headerlink" title="启动ZooKeeper"></a>启动ZooKeeper</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkServer.sh start conf&#x2F;zoo.cfg</span><br><span class="line">bin&#x2F;zkServer.sh status</span><br></pre></td></tr></table></figure>
-
-<h2 id="ZooKeeper客户端连接服务"><a href="#ZooKeeper客户端连接服务" class="headerlink" title="ZooKeeper客户端连接服务"></a>ZooKeeper客户端连接服务</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkCli.sh</span><br></pre></td></tr></table></figure>
-
-<h2 id="配置开机启动ZooKeeper"><a href="#配置开机启动ZooKeeper" class="headerlink" title="配置开机启动ZooKeeper"></a>配置开机启动ZooKeeper</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;etc&#x2F;rc.d&#x2F;init.d</span><br><span class="line">vi zookeeper.sh</span><br></pre></td></tr></table></figure>
-
-<p>配置内容如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line">#chkconfig:2345 20 90</span><br><span class="line">#description:zookeeper</span><br><span class="line">source &#x2F;etc&#x2F;profile.d&#x2F;java_env.sh</span><br><span class="line">&#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;zkServer.sh start &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;conf&#x2F;zoo.cfg</span><br></pre></td></tr></table></figure>
-
-<p>内容说明</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash 声明脚本类型</span><br><span class="line">#chkconfig:2345 20 90 声明启动优先级</span><br><span class="line">#description:zookeeper 脚本描述</span><br></pre></td></tr></table></figure>
-
-<h2 id="多机多服务集群配置"><a href="#多机多服务集群配置" class="headerlink" title="多机多服务集群配置"></a>多机多服务集群配置</h2><p>准备三台ZooKeeper服务器（记得打开防火墙端口号）</p>
-<table>
-<thead>
-<tr>
-<th>主机名</th>
-<th>ip</th>
-<th>端口</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ZooKeeper01</td>
-<td>192.168.1.151</td>
-<td>2181 2888 3888</td>
-</tr>
-<tr>
-<td>ZooKeeper02</td>
-<td>192.168.1.152</td>
-<td>2181 2888 3888</td>
-</tr>
-<tr>
-<td>ZooKeeper03</td>
-<td>192.168.1.153</td>
-<td>2181 2888 3888</td>
-</tr>
-</tbody></table>
-<p>修改zoo.cfg配置文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin</span><br><span class="line">vi conf&#x2F;zoo.cfg</span><br></pre></td></tr></table></figure>
-
-<p>添加如下内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server.1&#x3D;192.168.1.151:2888:3888</span><br><span class="line">server.2&#x3D;192.168.1.152:2888:3888</span><br><span class="line">server.3&#x3D;192.168.1.153:2888:3888</span><br></pre></td></tr></table></figure>
-
-<p>创建myid文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi dataDir&#x2F;myid</span><br><span class="line">服务器192.168.1.141的myid文件写入1</span><br><span class="line">服务器192.168.1.142的myid文件写入2</span><br><span class="line">服务器192.168.1.143的myid文件写入3</span><br></pre></td></tr></table></figure>
-
-<p>重启各个ZooKeeper服务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkServer.sh stop</span><br><span class="line">bin&#x2F;zkServer.sh start</span><br><span class="line">bin&#x2F;zkServer.sh status</span><br></pre></td></tr></table></figure>
-
-<p>如果配置成功可以看到如下内容</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">192.168.1.153</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: follower</span><br><span class="line"></span><br><span class="line">192.168.1.152</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: leader</span><br><span class="line"></span><br><span class="line">192.168.1.151</span><br><span class="line">ZooKeeper JMX enabled by default</span><br><span class="line">Using config: &#x2F;opt&#x2F;apache-zookeeper-3.5.7-bin&#x2F;bin&#x2F;..&#x2F;conf&#x2F;zoo.cfg</span><br><span class="line">Client port found: 2181. Client address: localhost.</span><br><span class="line">Mode: follower</span><br></pre></td></tr></table></figure>
-
-<p>使用zkCli.sh测试</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin&#x2F;zkCli.sh -server 192.168.1.151:2181</span><br></pre></td></tr></table></figure>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">ZooKeeper</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">下载安装</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">中间件</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/ZooKeeper//" class="article-tag-list-link color5">ZooKeeper</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2018/01/09/CentOS7%E5%AE%89%E8%A3%85ZooKeeper/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-hexo入门教程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">hexo入门教程</a>
-    </h1>
-  
-
-        
-        <a href="/2017/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" class="archive-article-date">
-  	<time datetime="2017-07-18T13:33:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-07-18</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><p>hexo官网配置教程：<a href="https://hexo.io/zh-cn/docs/configuration" target="_blank" rel="noopener">https://hexo.io/zh-cn/docs/configuration</a></p>
-<p>安装Git</p>
-<p>安装Node.js</p>
-<h2 id="安装hexo"><a href="#安装hexo" class="headerlink" title="安装hexo"></a>安装hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install -g hexo-cli</span><br></pre></td></tr></table></figure>
-
-<p>在指定目录初始化hexo</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo init D:\IdeaProjects\hexo-blog</span><br><span class="line">cd hexo-blog</span><br><span class="line">cnpm install</span><br></pre></td></tr></table></figure>
-
-<h2 id="启动hexo"><a href="#启动hexo" class="headerlink" title="启动hexo"></a>启动hexo</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo s</span><br></pre></td></tr></table></figure>
-
-<h2 id="更换hexo主题"><a href="#更换hexo主题" class="headerlink" title="更换hexo主题"></a>更换hexo主题</h2><p>克隆yilia主题到theme/yilia目录</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;litten&#x2F;hexo-theme-yilia.git themes&#x2F;yilia</span><br></pre></td></tr></table></figure>
-
-<p>修改_config.yml文件，修改为yilia</p>
-<p><img src="/assets/blogImg/hexo入门教程_01.png" width="500"></p> 
-清除缓存，编译
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br></pre></td></tr></table></figure>
-
-<h2 id="新建文章"><a href="#新建文章" class="headerlink" title="新建文章"></a>新建文章</h2><p>新建的文章默认保存到source/_posts路径下</p>
-<p>可以使用Notepads编辑markdown文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo n “什么是微服务架构”</span><br></pre></td></tr></table></figure>
-
-<h2 id="部署到github"><a href="#部署到github" class="headerlink" title="部署到github"></a>部署到github</h2><p>登录github，新建仓库freebie5.github.io（仓库名称必须是：昵称.githut.io）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cnpm install --save hexo-deployer-git</span><br></pre></td></tr></table></figure>
-
-<p>配置_config.yml</p>
-<p><img src="/assets/blogImg/hexo入门教程_02.png" width="500"></p> 
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo d</span><br></pre></td></tr></table></figure>
-
-<p>访问<a href="https://freebie5.github.io/" target="_blank" rel="noopener">https://freebie5.github.io/</a></p>
-<h2 id="yilia作者的hexo主页"><a href="#yilia作者的hexo主页" class="headerlink" title="yilia作者的hexo主页"></a>yilia作者的hexo主页</h2><p><a href="http://litten.me/photos/" target="_blank" rel="noopener">http://litten.me/photos/</a></p>
-<p><a href="https://github.com/litten/BlogBackup" target="_blank" rel="noopener">https://github.com/litten/BlogBackup</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">入门教程</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">hexo</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/hexo//" class="article-tag-list-link color5">hexo</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/07/18/hexo%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+      <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &amp;raquo;</a>
     </nav>
   
 
@@ -956,6 +1068,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
@@ -968,11 +1088,43 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
+                <a href="javascript:void(0)" class="js-tag color1">两阶段提交</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+                <a href="javascript:void(0)" class="js-tag color1">三阶段提交</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">事务</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">分布式</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">ACID</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CAP</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">BASE</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">排序</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">算法</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1000,26 +1152,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">ConcurrentHashMap</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">并发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">索引</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
               </li>
              
@@ -1033,6 +1165,22 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Hashtable</a>
               </li>
              
               <li class="article-tag-list-item">
