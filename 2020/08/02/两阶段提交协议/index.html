@@ -8,17 +8,20 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>两阶段提交协议 | 大香肠叔叔的码农日志</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="1.两阶段提交协议（2PC，Two-phase Commit）2PC将分布式事务拆分成2个阶段：准备阶段（Prepare phase）和提交阶段（Commit phase） 整个事务过程由一个协调者和多个参与者组成。协调者负责接收参与者发起的事务请求，向所有参与者发起投票，收集投票结果，做出commit或者rollback决定，并将决定通知给参与者。参与者负责监听来自协调者的投票请求，以及最后的决">
+  <meta name="description" content="1.两阶段提交协议（2PC，Two-phase Commit）2PC将分布式事务拆分成2个阶段：准备阶段（Prepare phase）和提交阶段（Commit phase） 整个事务过程由一个协调者和多个参与者组成。 协调者负责接收参与者发起的事务请求，向所有参与者发起投票，收集投票结果，做出commit或者rollback决定，并将决定通知给参与者。 参与者负责监听来自协调者的投票请求，以及最后">
 <meta property="og:type" content="article">
 <meta property="og:title" content="两阶段提交协议">
 <meta property="og:url" content="http://yoursite.com/2020/08/02/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%8D%8F%E8%AE%AE/index.html">
 <meta property="og:site_name" content="大香肠叔叔的码农日志">
-<meta property="og:description" content="1.两阶段提交协议（2PC，Two-phase Commit）2PC将分布式事务拆分成2个阶段：准备阶段（Prepare phase）和提交阶段（Commit phase） 整个事务过程由一个协调者和多个参与者组成。协调者负责接收参与者发起的事务请求，向所有参与者发起投票，收集投票结果，做出commit或者rollback决定，并将决定通知给参与者。参与者负责监听来自协调者的投票请求，以及最后的决">
+<meta property="og:description" content="1.两阶段提交协议（2PC，Two-phase Commit）2PC将分布式事务拆分成2个阶段：准备阶段（Prepare phase）和提交阶段（Commit phase） 整个事务过程由一个协调者和多个参与者组成。 协调者负责接收参与者发起的事务请求，向所有参与者发起投票，收集投票结果，做出commit或者rollback决定，并将决定通知给参与者。 参与者负责监听来自协调者的投票请求，以及最后">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%8D%8F%E8%AE%AE_01.png">
 <meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%8D%8F%E8%AE%AE_02.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%8D%8F%E8%AE%AE_03.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%8D%8F%E8%AE%AE_04.png">
+<meta property="og:image" content="http://yoursite.com/assets/blogImg/%E4%B8%A4%E9%98%B6%E6%AE%B5%E6%8F%90%E4%BA%A4%E5%8D%8F%E8%AE%AE_05.png">
 <meta property="article:published_time" content="2020-08-02T13:21:46.000Z">
-<meta property="article:modified_time" content="2020-08-03T16:33:14.792Z">
+<meta property="article:modified_time" content="2020-08-04T16:04:32.680Z">
 <meta property="article:author" content="大香肠叔叔">
 <meta property="article:tag" content="两阶段提交">
 <meta property="article:tag" content="三阶段提交">
@@ -163,14 +166,16 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="1-两阶段提交协议（2PC，Two-phase-Commit）"><a href="#1-两阶段提交协议（2PC，Two-phase-Commit）" class="headerlink" title="1.两阶段提交协议（2PC，Two-phase Commit）"></a>1.两阶段提交协议（2PC，Two-phase Commit）</h2><p>2PC将分布式事务拆分成2个阶段：<strong>准备阶段（Prepare phase）</strong>和<strong>提交阶段（Commit phase）</strong></p>
-<p>整个事务过程由一个<strong>协调者</strong>和多个<strong>参与者</strong>组成。协调者负责接收参与者发起的事务请求，向所有参与者发起投票，收集投票结果，做出commit或者rollback决定，并将决定通知给参与者。参与者负责监听来自协调者的投票请求，以及最后的决定，一旦协调者的决定是Rollback，所有参与者都必须回滚本地事务，否则所有参与者都提交本地事务。</p>
+<p>整个事务过程由一个<strong>协调者</strong>和多个<strong>参与者</strong>组成。</p>
+<p>协调者负责接收参与者发起的事务请求，向所有参与者发起投票，收集投票结果，做出commit或者rollback决定，并将决定通知给参与者。</p>
+<p>参与者负责监听来自协调者的投票请求，以及最后的决定，一旦协调者的决定是rollback，所有参与者都必须回滚本地事务，否则所有参与者都提交本地事务。</p>
 <h3 id="准备阶段（Prepare-phase）"><a href="#准备阶段（Prepare-phase）" class="headerlink" title="准备阶段（Prepare phase）"></a>准备阶段（Prepare phase）</h3><p>1）协调者向所有的参与者发送投票请求，并等待参与者反馈事务执行结果；</p>
 <p>2）事务参与者收到请求之后，执行事务但不提交，并记录事务日志（Undo日志和Redo日志，Undo日志是记录修改前的数据，用于数据库回滚，Redo日志是记录修改后的数据，用于提交事务后写入数 据文件）；</p>
 <p>3）参与者将自己事务执行情况反馈给协调者，同时阻塞等待协调者的后续指令。</p>
 <h3 id="提交阶段（Commit-phase）"><a href="#提交阶段（Commit-phase）" class="headerlink" title="提交阶段（Commit phase）"></a>提交阶段（Commit phase）</h3><p>在经过第一阶段协调者的询盘之后，各个参与者会回复自己事务的执行情况，这时候存在 3 种可能性：</p>
 <p>1）所有的参与者都回复能够正常执行事务；</p>
 <p>2）一个或多个参与者回复事务执行失败；</p>
-<p>3）协调者等待超时。（超时原因有两个可能：一是协调者发起的投票请求没有送达参与者，二是参与者的响应没有送到协调者）。</p>
+<p>3）协调者等待超时。（超时原因有两个可能：一是协调者发起的投票请求没有送达参与者，二是参与者的响应没有送到协调者）</p>
 <p><strong>对于第 1 种情况，协调者将向所有的参与者发出提交事务的通知，具体步骤如下：</strong></p>
 <p>1）协调者向各个参与者发送 commit 通知，请求提交事务；</p>
 <p>2）参与者收到事务提交通知之后执行 commit 操作，然后释放占有的资源；</p>
@@ -187,29 +192,34 @@
 <thead>
 <tr>
 <th>阶段</th>
-<th>被网络超时影响操作</th>
-<th>导致的结果</th>
+<th>被网络超时影响的操作</th>
+<th>协调者受影响</th>
+<th>参与者受影响</th>
 </tr>
 </thead>
 <tbody><tr>
 <td>准备阶段</td>
 <td>参与者没有收到协调者的投票请求</td>
-<td>协调者发送rollback通知</td>
+<td>等待超时，发送rollback通知</td>
+<td>无影响</td>
 </tr>
 <tr>
 <td>准备阶段</td>
 <td>协调者没有收到参与者的事务执行请求的应答</td>
-<td>协调者发送rollback通知</td>
+<td>等待超时，发送rollback通知</td>
+<td>同步阻塞；</td>
 </tr>
 <tr>
 <td>提交阶段</td>
 <td>参与者没有收到协调者的 commit通知 或者 rollback通知</td>
-<td>阻塞，数据不一致</td>
+<td>等待超时，发送rollback通知</td>
+<td>1）同步阻塞；2）如果部分参与收到通知，部分参与者收不到通知，则数据不一致</td>
 </tr>
 <tr>
 <td>提交阶段</td>
 <td>协调者没有收到参与者的 commit结果 或者 rollback结果</td>
-<td></td>
+<td>无影响</td>
+<td>无影响</td>
 </tr>
 </tbody></table>
 <h3 id="2PC的缺点"><a href="#2PC的缺点" class="headerlink" title="2PC的缺点"></a>2PC的缺点</h3><p>1）单点问题</p>
@@ -218,37 +228,101 @@
 <p>在准备阶段，参与者向协调者发送事务执行情况之后，就会阻塞等待协调者的后续指令。</p>
 <p>3）数据不一致</p>
 <p>两阶段提交协议虽然是为分布式数据强一致性所设计，但仍然存在数据不一致性的可能性。比如在第二阶段中，假设协调者发出了事务 commit 通知，但是因为网络问题该通知仅被一部分参与者所收到并执行了commit 操作，其余的参与者则因为没有收到通知一直处于阻塞状态，这时候就产生了数据的不一致性。</p>
-<h2 id="2-三阶段提交协议（3PC，Three-phase-Commit）"><a href="#2-三阶段提交协议（3PC，Three-phase-Commit）" class="headerlink" title="2.三阶段提交协议（3PC，Three-phase Commit）"></a>2.三阶段提交协议（3PC，Three-phase Commit）</h2><p>针对两阶段提交存在的问题，三阶段提交协议通过引入一个 <strong>预询盘</strong> 阶段，以及<strong>超时策略</strong>来减少整个集群的阻塞时间，提升系统性能。三阶段提交的三个阶段分别为：<strong>预询盘（canCommit）</strong>、<strong>预提交（preCommit）</strong>，以及<strong>事务提交（doCommit）</strong>。</p>
-<h3 id="预询盘（canCommit）"><a href="#预询盘（canCommit）" class="headerlink" title="预询盘（canCommit）"></a>预询盘（canCommit）</h3><h3 id="预提交（pre-commit）"><a href="#预提交（pre-commit）" class="headerlink" title="预提交（pre commit）"></a>预提交（pre commit）</h3><h3 id="事务提交（doCommit）"><a href="#事务提交（doCommit）" class="headerlink" title="事务提交（doCommit）"></a>事务提交（doCommit）</h3><h3 id="网络超时导致的问题探讨-1"><a href="#网络超时导致的问题探讨-1" class="headerlink" title="网络超时导致的问题探讨"></a>网络超时导致的问题探讨</h3><table>
+<h2 id="2-三阶段提交协议（3PC，Three-phase-Commit）"><a href="#2-三阶段提交协议（3PC，Three-phase-Commit）" class="headerlink" title="2.三阶段提交协议（3PC，Three-phase Commit）"></a>2.三阶段提交协议（3PC，Three-phase Commit）</h2><p>针对两阶段提交存在的问题，三阶段提交协议将流程分为三阶段，并且参与者也引入了超时机制，包含如下三个阶段：canCommit，preCommit，doCommit</p>
+<h3 id="canCommit阶段"><a href="#canCommit阶段" class="headerlink" title="canCommit阶段"></a>canCommit阶段</h3><p>1）协调者向各个参与者发送canCommit请求，询问是否可以执行事务操作，并等待回复；</p>
+<p>2）各个参与者依据自身状况回复一个预估值，如果预估自己能够正常执行事务就返回确定信息，并进入preCommit阶段，否则返回否定信息。</p>
+<h3 id="preCommit阶段"><a href="#preCommit阶段" class="headerlink" title="preCommit阶段"></a>preCommit阶段</h3><p>本阶段协调者会根据canCommit阶段参与者的响应结果采取相应操作，结果主要有 3 种：</p>
+<p>1）所有的参与者都返回确定信息。</p>
+<p>2）一个或多个参与者返回否定信息。</p>
+<p>3）协调者等待超时。（超时原因有两个可能：一是协调者发起的canCommit请求没有送达参与者，二是参与者的canCommit响应没有送到协调者）</p>
+<p><strong>针对第 1 种情况，协调者会向所有参与者发送事务preCommit请求，具体步骤如下：</strong></p>
+<p>1）协调者向所有的事务参与者发送事务preCommit请求；</p>
+<p>2）参与者收到preCommit请求后执行事务但不提交；如果收不到preCommit请求，则中断事务；</p>
+<p>3）参与者将事务执行情况返回给协调者。</p>
+<p><strong>针对第 2 和第 3 种情况，协调者认为事务无法正常执行，于是向各个参与者发出abort通知，请求退出预备状态，具体步骤如下：</strong></p>
+<p>1）协调者向所有事务参与者发送abort通知；</p>
+<p>2）参与者收到通知后中断事务。</p>
+<p><img src="/assets/blogImg/两阶段提交协议_03.png" width="750"></p>
+
+<h3 id="doCommit阶段"><a href="#doCommit阶段" class="headerlink" title="doCommit阶段"></a>doCommit阶段</h3><p>如果第二阶段事务未中断，那么本阶段协调者将会依据事务执行返回的结果来决定提交或回滚事务，分为 3 种情况：</p>
+<p>1）所有的参与者都能正常执行事务；</p>
+<p>2）一个或多个参与者执行事务失败；</p>
+<p>3）协调者等待超时。</p>
+<p><strong>针对第 1 种情况，协调者向各个参与者发起doCommit请求，具体步骤如下：</strong></p>
+<p>1）协调者向所有参与者发送doCommit请求；</p>
+<p>2）所有参与者在收到doCommit请求之后执行提交事务，并释放占有的资源；</p>
+<p>3）参与者向协调者反馈事务提交结果。</p>
+<p><img src="/assets/blogImg/两阶段提交协议_04.png" width="600"></p>
+
+<p><strong>针对第 2 和第 3 种情况，协调者认为事务无法成功执行，于是向各个参与者发送rollback请求，具体步骤如下：</strong></p>
+<p>1）协调者向所有参与者发送事务rollback通知；</p>
+<p>2）所有参与者在收到通知之后执行回滚事务，并释放占有的资源；</p>
+<p>3）参与者向协调者反馈事务回滚结果。</p>
+<p><img src="/assets/blogImg/两阶段提交协议_05.png" width="600"></p>
+
+<p>在本阶段如果因为协调者或网络问题，导致参与者迟迟不能收到来自协调者的commit或rollback请求，那么参与者将不会如两阶段提交中那样陷入阻塞，而是等待超时后继续commit，相对于两阶段提交虽然降低了同步阻塞，但仍然无法完全避免数据的不一致。</p>
+<h3 id="网络超时导致的问题探讨-1"><a href="#网络超时导致的问题探讨-1" class="headerlink" title="网络超时导致的问题探讨"></a>网络超时导致的问题探讨</h3><table>
 <thead>
 <tr>
 <th>阶段</th>
-<th>被网络超时影响操作</th>
-<th>导致的结果</th>
+<th>被网络超时影响的操作</th>
+<th>协调者受影响</th>
+<th>参与者受影响</th>
 </tr>
 </thead>
 <tbody><tr>
-<td></td>
-<td></td>
-<td></td>
+<td>canCommit</td>
+<td>参与者没有收到事务canCommit通知</td>
+<td>等待超时，发送 abort 通知</td>
+<td>无影响</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
-<td></td>
+<td>canCommit</td>
+<td>协调者没有收到事务canCommit响应</td>
+<td>等待超时，发送 abort 通知</td>
+<td>等待超时，中断事务</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
-<td></td>
+<td>canCommit</td>
+<td>参与者没有收到事务abort通知</td>
+<td>无影响</td>
+<td>等待超时，中断事务</td>
 </tr>
 <tr>
-<td></td>
-<td></td>
-<td></td>
+<td>preCommit</td>
+<td>参与者没有收到事务preCommit通知</td>
+<td>等待超时，发送abort通知</td>
+<td>等待超时，中断事务</td>
+</tr>
+<tr>
+<td>preCommit</td>
+<td>协调者没有收事务到preCommit响应</td>
+<td>等待超时，发送abort通知</td>
+<td>等待超时，提交事务</td>
+</tr>
+<tr>
+<td>preCommit</td>
+<td>参与者没有收到事务abort通知</td>
+<td>无影响</td>
+<td>等待超时，提交事务</td>
+</tr>
+<tr>
+<td>doCommit</td>
+<td>参与者没有收到事务doCommit通知</td>
+<td>无影响</td>
+<td>等待超时，提交事务</td>
+</tr>
+<tr>
+<td>doCommit</td>
+<td>协调者没有收到事务doCommit响应</td>
+<td>无影响</td>
+<td>无影响</td>
 </tr>
 </tbody></table>
-<h3 id="3PC的缺点"><a href="#3PC的缺点" class="headerlink" title="3PC的缺点"></a>3PC的缺点</h3><h2 id="3-对比"><a href="#3-对比" class="headerlink" title="3.对比"></a>3.对比</h2><h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://segmentfault.com/a/1190000012534071" target="_blank" rel="noopener">https://segmentfault.com/a/1190000012534071</a></p>
+<h3 id="3PC的缺点"><a href="#3PC的缺点" class="headerlink" title="3PC的缺点"></a>3PC的缺点</h3><p>数据不一致</p>
+<p>仍然存在数据不一致问题，例如，第三阶段协调者发出了rollback通知，但是由于网络原因，部分参与者没有收到rollback通知，就会产生数据不一致问题</p>
+<h2 id="3-对比"><a href="#3-对比" class="headerlink" title="3.对比"></a>3.对比</h2><p>3PC解决单点问题和同步阻塞问题，但是没有解决数据不一致问题</p>
+<h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://segmentfault.com/a/1190000012534071" target="_blank" rel="noopener">https://segmentfault.com/a/1190000012534071</a></p>
 <p><a href="https://www.cnblogs.com/heliusKing/p/12122145.html" target="_blank" rel="noopener">https://www.cnblogs.com/heliusKing/p/12122145.html</a></p>
 <p><a href="https://www.cnblogs.com/segeon/p/10381122.html" target="_blank" rel="noopener">https://www.cnblogs.com/segeon/p/10381122.html</a></p>
 
@@ -516,6 +590,22 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">事务</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">隔离级别</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
@@ -528,27 +618,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
+                <a href="javascript:void(0)" class="js-tag color3">排序</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">两阶段提交</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">三阶段提交</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">事务</a>
+                <a href="javascript:void(0)" class="js-tag color3">算法</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -580,26 +654,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">排序</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">算法</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">js</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
               </li>
              
@@ -616,11 +670,35 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">两阶段提交</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">三阶段提交</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
               </li>
              
               <li class="article-tag-list-item">
