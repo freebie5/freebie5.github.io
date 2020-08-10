@@ -178,6 +178,360 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-什么是红黑树" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/27/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91/">什么是红黑树</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/27/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91/" class="archive-article-date">
+  	<time datetime="2020-07-27T14:08:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-27</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-红黑树定义"><a href="#1-红黑树定义" class="headerlink" title="1.红黑树定义"></a>1.红黑树定义</h2><p>红黑树的定义也是它的性质，有以下五条：</p>
+<ul>
+<li>性质1. 所有节点是红色或黑色</li>
+<li>性质2. 根节点是黑色</li>
+<li>性质3. 所有叶子都是黑色（叶子是NIL节点）</li>
+<li>性质4. 如果一个节点是红的，则它的两个儿子都是黑的</li>
+<li>性质5. 从任一节点到其叶子的所有简单路径都包含相同数目的黑色节点。</li>
+</ul>
+<p>下图是一棵红黑树</p>
+<p><img src="/assets/blogImg/什么是红黑树_01.png" width="500"></p>
+
+<h2 id="2-红黑树的基本操作"><a href="#2-红黑树的基本操作" class="headerlink" title="2. 红黑树的基本操作"></a>2. 红黑树的基本操作</h2><h3 id="2-1-查找操作"><a href="#2-1-查找操作" class="headerlink" title="2.1.查找操作"></a>2.1.查找操作</h3><p>因为红黑树也是二叉查找树，因此红黑树上的查找操作与普通二叉查找树上的查找操作相同。</p>
+<h3 id="2-2-插入操作"><a href="#2-2-插入操作" class="headerlink" title="2.2.插入操作"></a>2.2.插入操作</h3><h4 id="2-2-1-为什么插入的节点总是红色"><a href="#2-2-1-为什么插入的节点总是红色" class="headerlink" title="2.2.1.为什么插入的节点总是红色"></a>2.2.1.为什么插入的节点总是红色</h4><p>因为插入一个红色节点比插入一个黑色节点破坏红黑特性的可能性更小，具体原因如下：</p>
+<ol>
+<li>插入黑色节点总会改变黑色高度（违背性质5），但是插入红色节点只有一半的机会会违背性质4。</li>
+<li>违背性质4比违背性质5要更容易修正。</li>
+</ol>
+<h4 id="2-2-2-插入节点破坏红黑树平衡的3种情况"><a href="#2-2-2-插入节点破坏红黑树平衡的3种情况" class="headerlink" title="2.2.2.插入节点破坏红黑树平衡的3种情况"></a>2.2.2.插入节点破坏红黑树平衡的3种情况</h4><ol>
+<li><p>如果是第一次插入，原树为空，只会违反红黑树的规则2，所以只要把插入的根节点改成黑色即可；</p>
+</li>
+<li><p>如果插入节点的父节点是黑色的，那不会违背红黑树的规则，什么也不需要做；</p>
+</li>
+<li><p>如果插入节点的父节点是红色的，又分为以下3种情况：</p>
+<p>3.1. 插入节点的父节点和其叔叔节点均为红色的；</p>
+<p>3.2. 插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点；</p>
+<p>3.3. 插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点。</p>
+</li>
+</ol>
+<p>下面具体分析情况3的各个情况需要什么操作才可以保持红黑树的平衡：</p>
+<h5 id="插入节点的父节点和其叔叔节点均为红色的"><a href="#插入节点的父节点和其叔叔节点均为红色的" class="headerlink" title="插入节点的父节点和其叔叔节点均为红色的"></a>插入节点的父节点和其叔叔节点均为红色的</h5><p>这个情况比较简单，只需要变色就行了，如下图左边的红黑树，将当前节点4的父节点5和叔叔节点8涂黑，将祖父节点7涂红，变成上图右边的红黑树。<strong>再将当前节点指向节点7，再次从新的当前节点7开始算法</strong></p>
+<p><img src="/assets/blogImg/什么是红黑树_2.png" width="900"></p>
+
+<h5 id="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点"><a href="#插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点" class="headerlink" title="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点"></a>插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的右节点</h5><p>将当前节点7的父节点2作为支点做左旋操作。完成后如下图左边的红黑树所示。<strong>再将当前节点指向节点2，再次从新的当前节点2开始算法</strong></p>
+<p><img src="/assets/blogImg/什么是红黑树_3.png" width="900"></p>
+
+<h5 id="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点"><a href="#插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点" class="headerlink" title="插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点"></a>插入节点的父节点是红色，叔叔节点是黑色，且插入节点是其父节点的左节点</h5><p>将当前节点2的父节点7涂黑，将祖父节点11涂红，以祖父节点11为支点做右旋操作。最后把根节点涂黑，整个红黑树重新恢复了平衡，如上图右边的红黑树所示。至此，插入操作完成！</p>
+<h4 id="2-2-3变色，左旋转，右旋转的先后顺序"><a href="#2-2-3变色，左旋转，右旋转的先后顺序" class="headerlink" title="2.2.3变色，左旋转，右旋转的先后顺序"></a>2.2.3变色，左旋转，右旋转的先后顺序</h4><p>我们可以看出，如果是从情况1开始发生的，必然会走完情况2和3，也就是说这是一整个流程。当然，实际情况可能不会从情况1发生，如果从情况2开始发生，那再走个情况3即可完成调整，如果直接只要调整情况3，那么前两种情况均不需要调整了。故变色和旋转之间的先后关系可以表示为：变色-&gt;左旋-&gt;右旋。</p>
+<h3 id="2-3-删除操作"><a href="#2-3-删除操作" class="headerlink" title="2.3.删除操作"></a>2.3.删除操作</h3><p>下次复习总结的时候补上</p>
+<h2 id="3-红黑树的应用场景"><a href="#3-红黑树的应用场景" class="headerlink" title="3.红黑树的应用场景"></a>3.红黑树的应用场景</h2><p>红黑树的应用场景很多，比如</p>
+<ol>
+<li>Java中的TreeMap以及JDK1.8以后的HashMap（当节点中链表长度大于8时会将链表转为红黑树）</li>
+</ol>
+<h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://baijiahao.baidu.com/s?id=1645429373049393021&amp;wfr=spider&amp;for=pc" target="_blank" rel="noopener">https://baijiahao.baidu.com/s?id=1645429373049393021&amp;wfr=spider&amp;for=pc</a></p>
+<p><a href="https://www.jianshu.com/p/30afcf59828f" target="_blank" rel="noopener">https://www.jianshu.com/p/30afcf59828f</a></p>
+<p><a href="https://blog.csdn.net/eson_15/article/details/51144079" target="_blank" rel="noopener">https://blog.csdn.net/eson_15/article/details/51144079</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">红黑树</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">数据结构</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/数据结构与算法//" class="article-tag-list-link color3">数据结构与算法</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/27/%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-MySQL索引之BTree索引" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/07/23/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BBTree%E7%B4%A2%E5%BC%95/">MySQL索引之BTree索引</a>
+    </h1>
+  
+
+        
+        <a href="/2020/07/23/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BBTree%E7%B4%A2%E5%BC%95/" class="archive-article-date">
+  	<time datetime="2020-07-22T16:17:41.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-07-23</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="1-从二叉排序树演化到B-Tree"><a href="#1-从二叉排序树演化到B-Tree" class="headerlink" title="1.从二叉排序树演化到B+Tree"></a>1.从二叉排序树演化到B+Tree</h2><p>MySQL中的BTree索引是指一种基于B+Tree的索引。</p>
+<p>B+Tree中的B代表平衡（balance），而不是二叉（binary）。</p>
+<p>B+Tree是从B-Tree（B-Tree不是B减树）演化而来，在讲B+Tree之前先要理解以下这些概念：</p>
+<ol>
+<li>二叉排序树（又称二叉查找树）</li>
+<li>平衡二叉(又称AVL树)</li>
+<li>平衡的二叉排序树（BBST）</li>
+<li>平衡多路查找树（B-Tree）</li>
+</ol>
+<p>Tips:</p>
+<ol>
+<li>AVL得名于它的发明者G. M. Adelson-Velsky和E. M. Landis，他们在1962年的论文《An algorithm for the organization of information》中发表了它。</li>
+<li>百度了一下平衡二叉树，发现网上的博客内容对平衡二叉树的概念理解有问题，他们都把平衡二叉理解为具有二叉排序树的基础上，左右子树的深度差小于1的树，我反复翻了数据结构的书，确认平衡二叉树只需具有左右子树深度差小于1。</li>
+</ol>
+<h3 id="1-1-二叉排序树（Binary-Sort-Tree）"><a href="#1-1-二叉排序树（Binary-Sort-Tree）" class="headerlink" title="1.1.二叉排序树（Binary Sort Tree）"></a>1.1.二叉排序树（Binary Sort Tree）</h3><p>严格定义：（为了写这个文章，专门翻了尘封很久的数据结构的书）</p>
+<p>或者是一棵空树；或者是具有下列性质的二叉树：</p>
+<p>1）若它的左子树不空，则左子树上的所有节点的值均小于它的根节点的值；</p>
+<p>2）若它的右子树不空，则右子树上的所有节点的值均大于它的根节点的值；</p>
+<p>3）它的左右子树也分别为二叉排序树。</p>
+<p>简单理解就是：</p>
+<p>左子树的键值小于根的键值，右子树的键值大于根的键值，如下图</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_01.png" width="300"></p>
+
+<p>对该二叉树的节点进行查找发现深度为1的节点的查找次数为1，深度为2的查找次数为2，深度为n的节点的查找次数为n，因此其平均查找次数为 (1+2+2+3+3+3) / 6 = 2.3次</p>
+<p>二叉查找树可以任意地构造，同样是2,3,5,6,7,8这六个数字，也可以按照下图的方式来构造</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_02.png" width="300"></p>
+
+<p>但是这棵二叉树的查询效率就低了。因此若想二叉树的查询效率尽可能高，需要这棵二叉树是平衡的，从而引出——平衡二叉树（AVL）</p>
+<h3 id="1-2-平衡二叉树-Balanced-Binary-Tree"><a href="#1-2-平衡二叉树-Balanced-Binary-Tree" class="headerlink" title="1.2.平衡二叉树(Balanced Binary Tree)"></a>1.2.平衡二叉树(Balanced Binary Tree)</h3><p>严格定义：</p>
+<p>或者是一棵空树；或者具有下列性质的二叉树：</p>
+<p>1）它的左子树和右子树都是平衡二叉树，且左子树和右子树的深度之差的绝对值不超过1。</p>
+<p>下面的两张图片，左边是平衡二叉树，它的任何节点的两个子树的高度差&lt;=1；右边的不是AVL树，其根节点的左子树高度为3，而右子树高度为1</p>
+<p style="display:inline-block;"><img src="/assets/blogImg/MySQL索引之BTree索引_03.png" width="300"></p>
+<p style="display:inline-block;"><img src="/assets/blogImg/MySQL索引之BTree索引_04.png" width="300"></p>
+
+<h3 id="1-3-平衡的二叉排序树（Blanced-Binary-Sorted-Tree）"><a href="#1-3-平衡的二叉排序树（Blanced-Binary-Sorted-Tree）" class="headerlink" title="1.3.平衡的二叉排序树（Blanced Binary Sorted Tree）"></a>1.3.平衡的二叉排序树（Blanced Binary Sorted Tree）</h3><p>正如上面所说的，只有当二叉排序树同时又是平衡二叉树的情况下，查找效率才是最高的。</p>
+<p>构建二叉排序树（或者在本来就是平衡的二叉排序树上添加删除节点）可能出现不平衡的情况，总结起来有如下四种情况：</p>
+<p>LL型，RR型，LR型，RL型</p>
+<p>如果遇到不平衡的情况，需要做旋转操作才能使二叉排序树保持平衡，上面四种情况分别对应四种不同的旋转操作，下面会分开细说。</p>
+<p>还有一点容易被忽略，那就是我们做旋转操作的对象是<strong>最小不平衡子树</strong>。</p>
+<h4 id="LL型"><a href="#LL型" class="headerlink" title="LL型"></a>LL型</h4><p>由于在A的左孩子(L)的左子树(L)上插入新结点，使原来平衡二叉树变得不平衡，此时A的平衡因子由1增至2。下图是LL型的最简单形式。显然，按照大小关系，结点B应作为新的根结点，其余两个节点分别作为左右孩子节点才能平衡，A结点就好像是绕结点B顺时针旋转一样。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_05.png" width="600"></p>
+
+<p>LL型调整的一般形式如下图所示，表示在A的左孩子B的左子树BL(不一定为空)中插入结点(图中阴影部分所示)而导致不平衡( h 表示子树的深度)。这种情况调整如下：①将A的左孩子B提升为新的根结点；②将原来的根结点A降为B的右孩子；③各子树按大小关系连接(BL和AR不变，BR调整为A的左子树)。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_06.png" width="600"></p>
+
+<h4 id="RR型"><a href="#RR型" class="headerlink" title="RR型"></a>RR型</h4><p>由于在A的右孩子(R)的右子树(R)上插入新结点，使原来平衡二叉树变得不平衡，此时A的平衡因子由-1变为-2。下图是RR型的最简单形式。显然，按照大小关系，结点B应作为新的根结点，其余两个节点分别作为左右孩子节点才能平衡，A结点就好像是绕结点B逆时针旋转一样。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_07.png" width="600"></p>
+
+<p>RR型调整的一般形式如下图所示，表示在A的右孩子B的右子树BR(不一定为空)中插入结点(图中阴影部分所示)而导致不平衡( h 表示子树的深度)。这种情况调整如下：①将A的右孩子B提升为新的根结点；②将原来的根结点A降为B的左孩子；③各子树按大小关系连接(AL和BR不变，BL调整为A的右子树)。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_08.png" width="600"></p>
+
+<h4 id="LR型"><a href="#LR型" class="headerlink" title="LR型"></a>LR型</h4><p>由于在A的左孩子(L)的右子树(R)上插入新结点，使原来平衡二叉树变得不平衡，此时A的平衡因子由1变为2。下图是LR型的最简单形式。显然，按照大小关系，结点C应作为新的根结点，其余两个节点分别作为左右孩子节点才能平衡。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_09.png" width="600"></p>
+
+<p>LR型调整的一般形式如下图所示，表示在A的左孩子B的右子树(根结点为C，不一定为空)中插入结点(图中两个阴影部分之一)而导致不平衡( h 表示子树的深度)。这种情况调整如下：①将B的右孩子C提升为新的根结点；②将原来的根结点A降为C的右孩子；③各子树按大小关系连接(BL和AR不变，CL和CR分别调整为B的右子树和A的左子树)。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_10.png" width="600"></p>
+
+<h4 id="RL型"><a href="#RL型" class="headerlink" title="RL型"></a>RL型</h4><p>由于在A的右孩子(R)的左子树(L)上插入新结点，使原来平衡二叉树变得不平衡，此时A的平衡因子由-1变为-2。下图是RL型的最简单形式。显然，按照大小关系，结点C应作为新的根结点，其余两个节点分别作为左右孩子节点才能平衡。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_11.png" width="600"></p>
+
+<p>RL型调整的一般形式如下图所示，表示在A的右孩子B的左子树(根结点为C，不一定为空)中插入结点(图中两个阴影部分之一)而导致不平衡( h 表示子树的深度)。这种情况调整如下：①将B的左孩子C提升为新的根结点；②将原来的根结点A降为C的左孩子；③各子树按大小关系连接(AL和BR不变，CL和CR分别调整为A的右子树和B的左子树)。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_12.png" width="600"></p>
+
+<h3 id="1-4-平衡多路查找树（B-Tree）"><a href="#1-4-平衡多路查找树（B-Tree）" class="headerlink" title="1.4.平衡多路查找树（B-Tree）"></a>1.4.平衡多路查找树（B-Tree）</h3><p>B-Tree是一种平衡的多路查找树，它在文件系统中很有用。</p>
+<p>严格定义：</p>
+<p>一棵m阶的B-Tree，或是空树，或满足下列特性的m叉树：</p>
+<p>1）树中每个节点至多有m棵子树；</p>
+<p>2）若根节点不是叶子节点，则至少有两棵子树；</p>
+<p>3）除根节点外的所有非终端节点至少包含ceil(m/2)棵子树；</p>
+<p>4)所有的非终端节点中包含下列信息数据</p>
+<p>(n, A0, K1, A1, K2, A2, …, Kn, An)</p>
+<p>其中：</p>
+<p>Ki(i=1,…,n)为关键字，且Ki &lt; Ki+1(i=1, …, n-1);</p>
+<p>Ai(i=0,…n)为指向子树根节点的指针，且指针Ai-1所指子树中所有节点的关键字均小于Ki(i=1, …, n)，An所指子树中所有节点的关键字均大于Kn；</p>
+<p>n为关键字的个数（ceil(m/2)-1 &lt;= n &lt;= m-1）；</p>
+<p>n+1为子树个数。</p>
+<p>5)所有的叶子节点都出现在同一层次上，并且不带信息（可以看作是外部节点或查找失败的节点，实际上这些节点不存在，指向这些节点的指针为空）。</p>
+<p>举个例子比较好理解，如下图是一棵4阶的B-Tree，其深度为4</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_13.png" width="600"></p>
+
+<p>B-Tree上查找关键字47的过程如下：</p>
+<p>首先从根节点开始，根据根节点指针t找到 *a节点，因为 *a节点中只有一个关键字，且给定值47&gt;关键字35，则若存在必在指针A1所指的子树内，顺指针找到 *c节点，该节点有两个关键字（43和78），而43&lt;47&lt;78，则若存在必在指针A1所指的子树中。同样，顺指针找到 *g节点，在该节点中顺序找找到关键字47，由此，查找成功。</p>
+<h4 id="插入删除节点"><a href="#插入删除节点" class="headerlink" title="插入删除节点"></a>插入删除节点</h4><p>插入删除节点如果还要保持B-Tree结构不被破坏需要做一些节点的变动，变动方法这里就不细说。</p>
+<h3 id="1-5-B-Tree"><a href="#1-5-B-Tree" class="headerlink" title="1.5.B+Tree"></a>1.5.B+Tree</h3><p>B+Tree是应文件系统所需而出的一种B-Tree的变型树。</p>
+<p>一棵m阶的B+Tree和m阶的B-Tree差异在于：</p>
+<p>1）有n棵子树的节点中含有n个关键字；</p>
+<p>2）所有的叶子节点中包含了全部关键字的信息，及指向含这些关键字记录的指针，且叶子节点本身依关键字的大小自小而大顺序链接；</p>
+<p>3）所有的非终端节点可以看成是索引部分，节点中仅含有其子树（根节点）中的最大（或最小）关键字。</p>
+<p>如下图是一棵3阶B+Tree，通常B+Tree有两个头指针，一个指向根节点，另一个指向关键字最小的叶子节点。因此，可以对B+Tree进行两种查找运算：一种是从最小关键字起顺序查找，另一种是从根节点开始，进行随机查找。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_14.png" width="600"></p>
+
+<p>B+Tree的查找过程和B-Tree类似，不同点在于如非终端节点上的关键字等于给定值，并不终止，而是继续向下直到叶子节点。也就是说不管查找是否成功，每次查找都是走了一条从根节点到叶子节点的路径。</p>
+<h4 id="插入删除节点-1"><a href="#插入删除节点-1" class="headerlink" title="插入删除节点"></a>插入删除节点</h4><p>插入删除节点如果还要保持B+Tree结构不被破坏需要做一些节点的变动，变动方法这里就不细说了。</p>
+<h2 id="2-MySQL中B-Tree的实现"><a href="#2-MySQL中B-Tree的实现" class="headerlink" title="2.MySQL中B+Tree的实现"></a>2.MySQL中B+Tree的实现</h2><p>在MySQL中，索引属于存储引擎级别的概念，不同存储引擎对索引的实现方式是不同的，本文主要讨论MyISAM和InnoDB两个存储引擎的索引实现方式。</p>
+<h3 id="MyISAM索引实现"><a href="#MyISAM索引实现" class="headerlink" title="MyISAM索引实现"></a>MyISAM索引实现</h3><p>MyISAM引擎使用B+Tree作为索引结构，叶子节点的data域存放的是数据记录的地址。下图是MyISAM索引的原理图。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_15.png" width="600"></p>
+
+<p>这里设表一共有三列，假设我们以Col1为主键，则上图是一个MyISAM表的主索引（Primary key）示意。可以看出MyISAM的索引文件仅仅保存数据记录的地址。在MyISAM中，主索引和辅助索引（Secondary key）在结构上没有任何区别，只是主索引要求key是唯一的，而辅助索引的key可以重复。如果我们在Col2上建立一个辅助索引，则此索引的结构如下图所示。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_16.png" width="600"></p>
+
+<p>同样也是一颗B+Tree，data域保存数据记录的地址。因此，MyISAM中索引检索的算法为：首先按照B+Tree搜索算法搜索索引，如果指定的Key存在，则取出其data域的值，然后以data域的值为地址，读取相应数据记录。</p>
+<p>MyISAM的索引方式也叫做“非聚集”的，之所以这么称呼是为了与InnoDB的聚集索引区分。</p>
+<h3 id="InnoDB索引实现"><a href="#InnoDB索引实现" class="headerlink" title="InnoDB索引实现"></a>InnoDB索引实现</h3><p>虽然InnoDB也使用B+Tree作为索引结构，但具体实现方式却与MyISAM截然不同。</p>
+<p>第一个重大区别是InnoDB的数据文件本身就是索引文件。从上文知道，MyISAM索引文件和数据文件是分离的，索引文件仅保存数据记录的地址。而在InnoDB中，表数据文件本身就是按B+Tree组织的一个索引结构，这棵树的叶子节点data域保存了完整的数据记录。这个索引的key是数据表的主键，因此InnoDB表数据文件本身就是主索引。</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_17.png" width="600"></p>
+
+<p>上图是InnoDB主索引（同时也是数据文件）的示意图，可以看到叶节点包含了完整的数据记录。这种索引叫做聚集索引。因为InnoDB的数据文件本身要按主键聚集，所以InnoDB要求表必须有主键（MyISAM可以没有），如果没有显式指定，则MySQL系统会自动选择一个可以唯一标识数据记录的列作为主键，如果不存在这种列，则MySQL自动为InnoDB表生成一个隐含字段作为主键，这个字段长度为6个字节，类型为长整形。</p>
+<p>第二个与MyISAM索引的不同是InnoDB的辅助索引data域存储相应记录主键的值而不是地址。换句话说，InnoDB的所有辅助索引都引用主键作为data域。例如，下图为定义在Col3上的一个辅助索引：</p>
+<p><img src="/assets/blogImg/MySQL索引之BTree索引_18.png" width="600"></p>
+
+<p>这里以英文字符的ASCII码作为比较准则。聚集索引这种实现方式使得按主键的搜索十分高效，但是辅助索引搜索需要检索两遍索引：首先检索辅助索引获得主键，然后用主键到主索引中检索获得记录。</p>
+<h4 id="Tips："><a href="#Tips：" class="headerlink" title="Tips："></a>Tips：</h4><p>了解不同存储引擎的索引实现方式对于正确使用和优化索引都非常有帮助，例如知道了InnoDB的索引实现后，就很容易明白为什么不建议使用过长的字段作为主键，因为所有辅助索引都引用主索引，过长的主索引会令辅助索引变得过大。再例如，用非单调的字段作为主键在InnoDB中不是个好主意，因为InnoDB数据文件本身是一颗B+Tree，非单调的主键会造成在插入新记录时数据文件为了维持B+Tree的特性而频繁的分裂调整，十分低效，而使用自增字段作为主键则是一个很好的选择。</p>
+<h2 id="3-拓展"><a href="#3-拓展" class="headerlink" title="3.拓展"></a>3.拓展</h2><p>由于篇幅和本文的重点是介绍MySQL BTree索引的实现，有几个我比较感兴趣内容我没有介绍，以后找时间写写。</p>
+<ol>
+<li>红黑树等数据结构也可以用来实现索引，但是文件系统及数据库系统普遍采用B-/+Tree作为索引结构</li>
+<li>索引使用策略和优化（MySQL的优化主要分为结构优化（Scheme optimization）和查询优化（Query optimization）。本章讨论的高性能索引策略主要属于结构优化范畴。本章的内容完全基于上文的理论基础，实际上一旦理解了索引背后的机制，那么选择高性能的策略就变成了纯粹的推理，并且可以理解这些策略背后的逻辑。）</li>
+</ol>
+<h2 id="4-引用"><a href="#4-引用" class="headerlink" title="4.引用"></a>4.引用</h2><p><a href="https://blog.csdn.net/a764340703/article/details/82621781" target="_blank" rel="noopener">https://blog.csdn.net/a764340703/article/details/82621781</a></p>
+<p><a href="https://blog.csdn.net/u013967628/article/details/84305511" target="_blank" rel="noopener">https://blog.csdn.net/u013967628/article/details/84305511</a></p>
+<p>《数据结构（C语言版）》 严蔚敏 吴伟民</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">树</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">BTree索引</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">索引</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/数据库相关//" class="article-tag-list-link color1">数据库相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/07/23/MySQL%E7%B4%A2%E5%BC%95%E4%B9%8BBTree%E7%B4%A2%E5%BC%95/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-MySQL索引之Hash索引" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -943,130 +1297,6 @@
 
 
   
-    <article id="post-Java并发编程之同步容器" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8B%E5%90%8C%E6%AD%A5%E5%AE%B9%E5%99%A8/">Java并发编程之同步容器</a>
-    </h1>
-  
-
-        
-        <a href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8B%E5%90%8C%E6%AD%A5%E5%AE%B9%E5%99%A8/" class="archive-article-date">
-  	<time datetime="2019-07-22T13:42:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-22</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8B%E5%90%8C%E6%AD%A5%E5%AE%B9%E5%99%A8/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Java并发编程之AQS" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BAQS/">Java并发编程之AQS</a>
-    </h1>
-  
-
-        
-        <a href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BAQS/" class="archive-article-date">
-  	<time datetime="2019-07-22T13:42:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-07-22</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2019/07/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%E4%B9%8BAQS/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &amp;raquo;</a>
@@ -1156,15 +1386,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
+                <a href="javascript:void(0)" class="js-tag color4">JVM</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CentOS 7</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Shell</a>
+                <a href="javascript:void(0)" class="js-tag color2">垃圾回收算法</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1188,7 +1414,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">JVM</a>
+                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CentOS 7</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Shell</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1252,6 +1486,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
               </li>
              
@@ -1265,18 +1511,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">js</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">java</a>
               </li>
              
               <li class="article-tag-list-item">
