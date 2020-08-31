@@ -8,15 +8,15 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>https安全传输原理 | 大香肠叔叔的码农日志</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="客户端和服务端如果使用http协议进行数据传输，数据内容没有加密，很容易泄漏。所以才有了后来的https协议。下面一步一步的说明https安全传输原理。 对称加密什么是对称加密？简单理解就是加密和解密都是同一把密钥。 如果数据内容没有加密，我们直接使用对称加密对数据进行加密即可，但是对称加密密钥怎么让对方知道呢，如果通过网络传输，有可能被黑客拦截，这样黑客也知道了密钥，对称加密也就失效了。 非对称">
+  <meta name="description" content="通过这个博文，我们可以了解到https安全传输使用到的技术，和为什么使用这些技术的原因。 对称加密什么是对称加密？简单理解就是加密和解密都是同一把密钥。 如果数据内容没有加密，我们直接使用对称加密对数据进行加密即可，但是对称加密密钥怎么让对方知道呢，如果通过网络传输，有可能被黑客拦截，这样黑客也知道了密钥，对称加密也就失效了。 非对称加密非对称加密有两把密钥： 1）私钥：只有自己知道； 2）公钥：">
 <meta property="og:type" content="article">
 <meta property="og:title" content="https安全传输原理">
 <meta property="og:url" content="http://yoursite.com/2020/08/20/https%E5%AE%89%E5%85%A8%E4%BC%A0%E8%BE%93%E5%8E%9F%E7%90%86/index.html">
 <meta property="og:site_name" content="大香肠叔叔的码农日志">
-<meta property="og:description" content="客户端和服务端如果使用http协议进行数据传输，数据内容没有加密，很容易泄漏。所以才有了后来的https协议。下面一步一步的说明https安全传输原理。 对称加密什么是对称加密？简单理解就是加密和解密都是同一把密钥。 如果数据内容没有加密，我们直接使用对称加密对数据进行加密即可，但是对称加密密钥怎么让对方知道呢，如果通过网络传输，有可能被黑客拦截，这样黑客也知道了密钥，对称加密也就失效了。 非对称">
+<meta property="og:description" content="通过这个博文，我们可以了解到https安全传输使用到的技术，和为什么使用这些技术的原因。 对称加密什么是对称加密？简单理解就是加密和解密都是同一把密钥。 如果数据内容没有加密，我们直接使用对称加密对数据进行加密即可，但是对称加密密钥怎么让对方知道呢，如果通过网络传输，有可能被黑客拦截，这样黑客也知道了密钥，对称加密也就失效了。 非对称加密非对称加密有两把密钥： 1）私钥：只有自己知道； 2）公钥：">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-08-20T15:57:48.000Z">
-<meta property="article:modified_time" content="2020-08-20T16:05:40.087Z">
+<meta property="article:modified_time" content="2020-08-29T16:10:56.580Z">
 <meta property="article:author" content="大香肠叔叔">
 <meta property="article:tag" content="https">
 <meta property="article:tag" content="对称加密">
@@ -222,7 +222,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>客户端和服务端如果使用http协议进行数据传输，数据内容没有加密，很容易泄漏。所以才有了后来的https协议。下面一步一步的说明https安全传输原理。</p>
+        <p>通过这个博文，我们可以了解到https安全传输使用到的技术，和为什么使用这些技术的原因。</p>
 <h2 id="对称加密"><a href="#对称加密" class="headerlink" title="对称加密"></a>对称加密</h2><p>什么是对称加密？简单理解就是加密和解密都是同一把密钥。</p>
 <p>如果数据内容没有加密，我们直接使用<strong>对称加密</strong>对数据进行加密即可，但是对称加密密钥怎么让对方知道呢，如果通过网络传输，有可能被黑客拦截，这样黑客也知道了密钥，对称加密也就失效了。</p>
 <h2 id="非对称加密"><a href="#非对称加密" class="headerlink" title="非对称加密"></a>非对称加密</h2><p>非对称加密有两把密钥：</p>
@@ -534,18 +534,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CentOS 7</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Shell</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
               </li>
              
@@ -558,6 +546,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CentOS 7</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Shell</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">JVM</a>
               </li>
              
@@ -566,23 +566,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">类文件结构</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">安全点</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">安全区域</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">虚拟机</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">运行时数据区域</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -598,19 +586,23 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">虚拟机</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">运行时数据区域</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">类文件结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">JMM</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">Java内存模型</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">explain</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">执行计划</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -626,7 +618,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">final</a>
+                <a href="javascript:void(0)" class="js-tag color3">explain</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">执行计划</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">URI</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">URL</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -662,7 +666,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">final</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">http</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">排序</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">算法</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -686,6 +702,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">top</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">free</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">树</a>
               </li>
              
@@ -698,11 +726,27 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">排序</a>
+                <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">算法</a>
+                <a href="javascript:void(0)" class="js-tag color5">先序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">中序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">消息队列</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -715,14 +759,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">java</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">消息队列</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -771,22 +807,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">隔离级别</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">先序遍历</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">中序遍历</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
               </li>
              
               <li class="article-tag-list-item">
