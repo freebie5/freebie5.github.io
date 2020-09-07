@@ -196,6 +196,125 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-什么是微服务架构" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/09/02/%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84/">什么是微服务架构</a>
+    </h1>
+  
+
+        
+        <a href="/2020/09/02/%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84/" class="archive-article-date">
+  	<time datetime="2020-09-02T14:46:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-09-02</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="马丁福勒对微服务架构（Microservice-Architecture）的定义"><a href="#马丁福勒对微服务架构（Microservice-Architecture）的定义" class="headerlink" title="马丁福勒对微服务架构（Microservice Architecture）的定义"></a>马丁福勒对微服务架构（Microservice Architecture）的定义</h2><p>In short, the microservice architectural style is an approach to developing a single application as a <strong>suite of small services</strong>, each <strong>running in its own process</strong> and communicating with lightweight mechanisms, often an HTTP resource API. These services are <strong>built around business capabilities</strong> and <strong>independently deployable</strong> by fully automated deployment machinery. There is a <strong>bare minimum of centralized management</strong> of these services, which may be written in different programming languages and use different data storage technologies.</p>
+<p>– <a href="https://www.martinfowler.com/articles/microservices.html" target="_blank" rel="noopener">James Lewis and Martin Fowler (2014)</a></p>
+<p>总结起来微服务架构具有如下几个特点：</p>
+<p>1）把一个单体服务拆分为一系列小服务；</p>
+<p>2）每一个微服务运行在自己的<strong>进程</strong>中；</p>
+<p>3）微服务之间通过轻量级通讯机制通信，例如：http；</p>
+<p>4）<strong>围绕业务</strong>构建微服务；</p>
+<p>5）每一个微服务都<strong>独立部署</strong>；</p>
+<p>6）所有微服务都<strong>极少量的中心化管理</strong>；（例如，所有的微服务都有自己的数据库，有自己的开发语言）</p>
+<h2 id="面向服务架构（Service-Oriented-Architecture，SOA）"><a href="#面向服务架构（Service-Oriented-Architecture，SOA）" class="headerlink" title="面向服务架构（Service Oriented Architecture，SOA）"></a>面向服务架构（Service Oriented Architecture，SOA）</h2><p>1996年，Gartner最早提出SOA。2002年12月，Gartner提出SOA是”现代应用开发领域最重要的课题”，还预计到2008年，SOA将成为占有绝对优势的软件工程实践方法，主流企业现在就应该在理解和应用SOA开发技能方面进行投资。</p>
+<p>面向服务的架构（SOA，Service-Oriented Architecture）是一个组件“模式” (或 “思想”，它不是一种“技术”)，它将应用程序的不同功能单元（称为服务）进行拆分，并通过这些服务之间定义良好的接口和协议联系起来。接口是采用中立的方式进行定义的，它应该独立于实现服务的硬件平台、操作系统和编程语言。这使得构件在各种各样的系统中的服务可以以一种统一和通用的方式进行交互。</p>
+<h3 id="企业服务总线（Enterprise-Service-Bus，ESB）"><a href="#企业服务总线（Enterprise-Service-Bus，ESB）" class="headerlink" title="企业服务总线（Enterprise Service Bus，ESB）"></a>企业服务总线（Enterprise Service Bus，ESB）</h3><p>ESB的主要功能：</p>
+<p>1）对各个服务之间消息监控与路由；</p>
+<p>2）解决各个服务组件之间通信；</p>
+<p>3）控制服务版本与部署；</p>
+<p>4）满足服务像事件处理,数据转换与映射,消息与事件查询与排序,安全或异常处理,协议转环,保证服务通讯的质量。</p>
+<h2 id="微服务架构和SOA"><a href="#微服务架构和SOA" class="headerlink" title="微服务架构和SOA"></a>微服务架构和SOA</h2><p>微服务是SOA发展出来的产物，它是一种比较现代化的细粒度的SOA。</p>
+<p>区别：</p>
+<p>1）SOA强调的是异构系统的可重用性；</p>
+<p>​      微服务架构强调的是服务按业务边界做细粒度的拆分；</p>
+<p>2）SOA强调按水平架构划分为：前、后端、数据库、测试等；</p>
+<p>​      微服务架构强调按垂直架构划分，按业务能力划分，每个服务完成一种特定的功能，服务即产品；</p>
+<p>3）SOA通信使用企业服务总线ESB；</p>
+<p>​      微服务架构通信使用轻量级协议，例如HTTP；</p>
+<p>4）SOA服务共享数据存储；</p>
+<p>​      每个微服务可以有一个独立的数据存储；</p>
+<p>5）SOA中容器（如Docker）的使用不太受欢迎；</p>
+<p>​      容器在微服务方面效果很好；</p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.martinfowler.com/articles/microservices.html" target="_blank" rel="noopener">https://www.martinfowler.com/articles/microservices.html</a></p>
+<p><a href="https://blog.csdn.net/qq_35119422/article/details/81560833" target="_blank" rel="noopener">https://blog.csdn.net/qq_35119422/article/details/81560833</a></p>
+<p><a href="https://www.cnblogs.com/jiangzhaowei/p/9168837.html" target="_blank" rel="noopener">https://www.cnblogs.com/jiangzhaowei/p/9168837.html</a></p>
+<p><a href="https://juejin.im/post/6844903480067358733" target="_blank" rel="noopener">https://juejin.im/post/6844903480067358733</a></p>
+<p><a href="https://www.cnblogs.com/icedorado/archive/2011/02/09/1950189.html" target="_blank" rel="noopener">https://www.cnblogs.com/icedorado/archive/2011/02/09/1950189.html</a></p>
+<p><a href="https://www.cnblogs.com/frankcui/p/12357518.html" target="_blank" rel="noopener">https://www.cnblogs.com/frankcui/p/12357518.html</a></p>
+<p><a href="https://www.cnblogs.com/wintersun/archive/2013/03/23/2977875.html" target="_blank" rel="noopener">https://www.cnblogs.com/wintersun/archive/2013/03/23/2977875.html</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">微服务</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/分布式相关//" class="article-tag-list-link color1">分布式相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/09/02/%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-如何查看服务器资源占用" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1421,68 +1540,6 @@
 
 
   
-    <article id="post-什么是NIO" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/08/15/%E4%BB%80%E4%B9%88%E6%98%AFNIO/">什么是NIO</a>
-    </h1>
-  
-
-        
-        <a href="/2020/08/15/%E4%BB%80%E4%B9%88%E6%98%AFNIO/" class="archive-article-date">
-  	<time datetime="2020-08-14T18:39:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-08-15</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/08/15/%E4%BB%80%E4%B9%88%E6%98%AFNIO/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
@@ -1572,18 +1629,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Linux</a>
               </li>
              
@@ -1596,19 +1641,23 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">ZooKeeper</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">下载安装</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">中间件</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">JVM</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">垃圾回收算法</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">安全点</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">安全区域</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1624,6 +1673,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">安全点</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">安全区域</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">类文件结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">虚拟机</a>
               </li>
              
@@ -1632,15 +1693,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">类文件结构</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">JMM</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">Java内存模型</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">explain</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">执行计划</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1656,27 +1721,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">explain</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">执行计划</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">URI</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">URL</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1704,11 +1753,23 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">hexo</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">final</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">http</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">微服务</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1740,15 +1801,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">linux</a>
+                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">top</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">free</a>
+                <a href="javascript:void(0)" class="js-tag color5">消息队列</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1761,6 +1818,30 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">js</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">java</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">top</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">free</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1777,26 +1858,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">后序遍历</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">消息队列</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">日常开发</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">js</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">java</a>
               </li>
              
               <li class="article-tag-list-item">
