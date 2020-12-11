@@ -238,63 +238,53 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-Redis哈希槽" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-MySQL主从复制的原理" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/10/24/Redis%E5%93%88%E5%B8%8C%E6%A7%BD/">Redis哈希槽</a>
+      <a class="article-title" href="/2020/10/29/MySQL%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E7%9A%84%E5%8E%9F%E7%90%86/">MySQL主从复制的原理</a>
     </h1>
   
 
         
-        <a href="/2020/10/24/Redis%E5%93%88%E5%B8%8C%E6%A7%BD/" class="archive-article-date">
-  	<time datetime="2020-10-24T07:39:27.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-24</time>
+        <a href="/2020/10/29/MySQL%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E7%9A%84%E5%8E%9F%E7%90%86/" class="archive-article-date">
+  	<time datetime="2020-10-29T15:42:53.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-29</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>如果Redis只用复制功能做主从，那么当数据量巨大的情况下，单机情况下可能已经承受不下一份数据，更不用说是主从都要各自保存一份完整的数据。在这种情况下，数据分片是一个非常好的解决办法。</p>
-<p>Redis的Cluster正是用于解决该问题。它主要提供两个功能：</p>
-<ol>
-<li>自动对数据分片，落到各个节点上；</li>
-<li>即使集群部分节点失效或者连接不上，依然可以继续处理命令。</li>
-</ol>
-<h2 id="简单哈希算法"><a href="#简单哈希算法" class="headerlink" title="简单哈希算法"></a>简单哈希算法</h2><p>假设有三台机，数据落在哪台机的算法为</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">c &#x3D; Hash(key) % 3</span><br></pre></td></tr></table></figure>
+        <h2 id="1-为什么需要主从复制？"><a href="#1-为什么需要主从复制？" class="headerlink" title="1.为什么需要主从复制？"></a>1.为什么需要主从复制？</h2><p>1、在业务复杂的系统中，有这么一个情景，有一句sql语句需要锁表，导致暂时不能使用读的服务，那么就很影响运行中的业务，使用主从复制，让主库负责写，从库负责读，这样，即使主库出现了锁表的情景，通过读从库也可以保证业务的正常运作。</p>
+<p>2、做数据的热备</p>
+<p>3、架构的扩展。业务量越来越大，I/O访问频率过高，单机无法满足，此时做多库的存储，降低磁盘I/O访问的频率，提高单个机器的I/O性能。</p>
+<h2 id="2-什么是MySQL的主从复制？"><a href="#2-什么是MySQL的主从复制？" class="headerlink" title="2.什么是MySQL的主从复制？"></a>2.什么是MySQL的主从复制？</h2><p>MySQL主从复制是指数据可以从一个MySQL数据库服务器主节点复制到一个或多个从节点。MySQL默认采用异步复制方式，这样从节点不用一直访问主服务器来更新自己的数据，数据的更新可以在远程连接上进行，从节点可以复制主数据库中的所有数据库，或者特定的数据库，或者特定的表。</p>
+<h2 id="3-MySQL复制原理"><a href="#3-MySQL复制原理" class="headerlink" title="3.MySQL复制原理"></a>3.MySQL复制原理</h2><p>（1）master服务器将数据的改变记录在二进制binlog日志，当master上的数据发生改变时，则将其改变写入二进制binlog日志中；</p>
+<p>（2）slave服务器会在一定时间间隔内对master二进制binlog日志进行探测其是否发生改变，如果发生改变，则开始一个I/O线程请求master二进制事件；</p>
+<p>（3）同时主节点为每个I/O线程启动一个dump线程，用于向其发送二进制事件，并保存至从节点本地的中继日志中，从节点将启动SQL线程从中继日志中读取二进制日志，在本地重放，使得其数据和主节点的保持一致，最后I/O Thread和SQL Thread将进入睡眠状态，等待下一次被唤醒。</p>
+<h3 id="也就是说"><a href="#也就是说" class="headerlink" title="也就是说"></a>也就是说</h3><ul>
+<li>从库会生成两个线程：一个I/O线程，一个SQL线程；</li>
+<li>I/O线程会去请求主库的binlog,并将得到的binlog写到本地的relay-log(中继日志)文件中；</li>
+<li>主库会生成一个log dump线程，用来给从库I/O线程传binlog；</li>
+<li>SQL线程，会读取relay log文件中的日志，并解析成sql语句逐一执行；</li>
+</ul>
+<h3 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h3><p>1）master将操作语句记录到binlog日志中，然后授予slave远程连接的权限（master一定要开启binlog二进制日志功能；通常为了数据安全考虑，slave也开启binlog功能）；</p>
+<p>2）slave开启两个线程：IO线程和SQL线程。其中：IO线程负责读取master的binlog内容到中继日志relay log里；SQL线程负责从relay log日志里读出binlog内容，并更新到slave的数据库里，这样就能保证slave数据和master数据保持一致了；</p>
+<p>3）MySQL主从复制至少需要两个MySQL的服务，当然MySQL服务可以分布在不同的服务器上，也可以在一台服务器上启动多个服务；</p>
+<p>4）MySQL主从复制最好确保master和slave服务器上的MySQL版本相同（如果不能满足版本一致，那么要保证master主节点的版本低于slave从节点的版本）；</p>
+<p>5）master和slave两节点的时间需同步。</p>
+<p><img src="/assets/blogImg/MySQL主从复制的原理_01.png" width="500"></p>
 
-<p>例如，key=A的哈希值为4，4%3=1，则落在第二台机。Key=B哈希值为11，11%3=2，则落在第三台机上。</p>
-<p>利用这样的算法，假设现在数据量太大了，需要增加一台机器。A原本落在第二台上，现在根据算法4%4=0，落到了第一台机器上了，但是第一台机器上根本没有A的值。这样的算法会导致增加机器或减少机器的时候，引起大量的缓存击穿，造成缓存雪崩。</p>
-<h2 id="一致性哈希算法"><a href="#一致性哈希算法" class="headerlink" title="一致性哈希算法"></a>一致性哈希算法</h2><p>在1997年，麻省理工学院的Karger等人提出了<strong>一致性哈希算法</strong>，为的就是解决分布式缓存的问题。</p>
-<p>在<strong>一致性哈希算法</strong>中，整个哈希空间是一个<strong>虚拟圆环</strong></p>
-<p><img src="/assets/blogImg/Redis哈希槽_01.png" width="350"></p>
-
-<p>假设有四个节点Node A、B、C、D，经过ip地址的哈希计算，它们的位置如下</p>
-<p><img src="/assets/blogImg/Redis哈希槽_02.png" width="350"></p>
-
-<p>有4个存储对象Object A、B、C、D，经过对Key的哈希计算后，它们的位置如下</p>
-<p><img src="/assets/blogImg/Redis哈希槽_03.png" width="350"></p>
-
-<p>对于各个Object，它所真正的存储位置是按顺时针找到的第一个存储节点。例如Object A顺时针找到的第一个节点是Node A，所以Node A负责存储Object A，Object B存储在Node B。</p>
-<p><strong>一致性哈希算法大概如此，那么它的容错性和扩展性如何呢？</strong></p>
-<p>假设Node C节点挂掉了，Object C的存储丢失，那么它顺时针找到的最新节点是Node D。也就是说Node C挂掉了，受影响仅仅包括Node B到Node C区间的数据，并且这些数据会转移到Node D进行存储。</p>
-<p><img src="/assets/blogImg/Redis哈希槽_04.png" width="350"></p>
-
-<p>同理，假设现在数据量大了，需要增加一台节点Node X。Node X的位置在Node B到Node C直接，那么受到影响的仅仅是Node B到Node X间的数据，它们要重新落到Node X上。</p>
-<p>所以一致性哈希算法对于容错性和扩展性有非常好的支持。但一致性哈希算法也有一个严重的问题，就是<strong>数据倾斜</strong>。</p>
-<p>如果在分片的集群中，节点太少，并且分布不均，一致性哈希算法就会出现部分节点数据太多，部分节点数据太少。也就是说无法控制节点存储数据的分配。如下图，大部分数据都在A上了，B的数据比较少。</p>
-<p><img src="/assets/blogImg/Redis哈希槽_05.png" width="350"></p>
-
-<h2 id="Redis哈希槽"><a href="#Redis哈希槽" class="headerlink" title="Redis哈希槽"></a>Redis哈希槽</h2><p>Redis集群（Cluster）并没有选用上面一致性哈希，而是采用了<strong>哈希槽</strong>（Hash Slot）的这种概念。主要的原因就是上面所说的，一致性哈希算法对于数据分布、节点位置的控制并不是很友好。</p>
-<p>首先<strong>哈希槽</strong>其实包含两个概念，第一个是<strong>哈希算法</strong>。Redis Cluster的hash算法不是简单的hash()，而是crc16算法，一种校验算法。另外一个就是<strong>槽位</strong>的概念，空间分配的规则。其实哈希槽的本质和一致性哈希算法非常相似，不同点就是对于哈希空间的定义。一致性哈希的空间是一个圆环，节点分布是基于圆环的，无法很好的控制数据分布。而Redis Cluster的槽位空间是自定义分配的，类似于Windows盘分区的概念。这种分区是可以自定义大小，自定义位置的。</p>
-<p>Redis Cluster包含了16384个哈希槽，每个Key通过计算后都会落在具体一个槽位上，而这个槽位是属于哪个存储节点的，则由用户自己定义分配。例如机器硬盘小的，可以分配少一点槽位，硬盘大的可以分配多一点。如果节点硬盘都差不多则可以平均分配。所以哈希槽这种概念很好地解决了一致性哈希的弊端。</p>
-<p>另外在<strong>容错性</strong>和<strong>扩展性</strong>上，与一致性哈希一样，都是对受影响的数据进行转移。而哈希槽本质上是对槽位的转移，把故障节点负责的槽位转移到其他正常的节点上。扩展节点也是一样，把其他节点上的槽位转移到新的节点上。</p>
-<p><strong>但一定要注意的是，对于槽位的转移和分派，Redis集群是不会自动进行的，而是需要人工配置的。所以Redis集群的高可用是依赖于节点的主从复制与主从间的自动故障转移。</strong></p>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.cnblogs.com/zackku/p/10094940.html" target="_blank" rel="noopener">https://www.cnblogs.com/zackku/p/10094940.html</a></p>
+<h3 id="具体步骤"><a href="#具体步骤" class="headerlink" title="具体步骤"></a>具体步骤</h3><p>1）从库通过手工执行change master to 语句连接主库，提供了连接的用户一切条件（user 、password、port、ip），并且让从库知道，二进制日志的起点位置（file名 position 号）； start slave</p>
+<p>2）从库的IO线程和主库的dump线程建立连接。</p>
+<p>3）从库根据change master to 语句提供的file名和position号，IO线程向主库发起binlog的请求。</p>
+<p>4）主库dump线程根据从库的请求，将本地binlog以events的方式发给从库IO线程。</p>
+<p>5）从库IO线程接收binlog events，并存放到本地relay-log中，传送过来的信息，会记录到<strong>master.info</strong>中</p>
+<p>6）从库SQL线程应用relay-log，并且把应用过的记录到<strong>relay-log.info</strong>中，默认情况下，已经应用过的relay 会自动被清理purge</p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://zhuanlan.zhihu.com/p/96212530" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/96212530</a></p>
 
       
 
@@ -308,15 +298,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">redis</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">一致性哈希</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">哈希槽</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">主从复制</a>
         		</li>
       		
 		</ul>
@@ -328,7 +314,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="/categories/缓存相关//" class="article-tag-list-link color5">缓存相关</a>
+        			<a href="/categories/数据库相关//" class="article-tag-list-link color1">数据库相关</a>
         		</li>
       		
 		</ul>
@@ -337,7 +323,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/10/24/Redis%E5%93%88%E5%B8%8C%E6%A7%BD/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/10/29/MySQL%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E7%9A%84%E5%8E%9F%E7%90%86/">展开全文 >></a>
         </p>
       
 
@@ -367,58 +353,27 @@
 
 
   
-    <article id="post-缓存穿透、缓存击穿、缓存雪崩的区别和解决方案" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-MySQL分区" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/10/24/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E3%80%81%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E3%80%81%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">缓存穿透、缓存击穿、缓存雪崩的区别和解决方案</a>
+      <a class="article-title" href="/2020/10/28/MySQL%E5%88%86%E5%8C%BA/">MySQL分区</a>
     </h1>
   
 
         
-        <a href="/2020/10/24/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E3%80%81%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E3%80%81%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/" class="archive-article-date">
-  	<time datetime="2020-10-24T07:10:03.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-24</time>
+        <a href="/2020/10/28/MySQL%E5%88%86%E5%8C%BA/" class="archive-article-date">
+  	<time datetime="2020-10-28T15:32:31.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-28</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="缓存处理流程"><a href="#缓存处理流程" class="headerlink" title="缓存处理流程"></a>缓存处理流程</h2><p><img src="/assets/blogImg/缓存穿透、缓存击穿、缓存雪崩的区别和解决方案_01.png" width="450"></p>
-
-<h2 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h2><h3 id="描述："><a href="#描述：" class="headerlink" title="描述："></a>描述：</h3><p>指缓存和数据库中都没有的数据，而用户不断发起请求，如发起为id为“-1”的数据或id为特别大不存在的数据。这时的用户很可能是攻击者，攻击会导致数据库压力过大。</p>
-<h3 id="解决方案："><a href="#解决方案：" class="headerlink" title="解决方案："></a>解决方案：</h3><ol>
-<li>接口层增加校验，如用户鉴权校验，id做基础校验，id&lt;=0的直接拦截；</li>
-<li>从缓存取不到的数据，在数据库中也没有取到，这时也可以将key-value对写为key-null，缓存有效时间可以设置短点，如30秒（设置太长会导致正常情况也没法使用）。这样可以防止攻击用户反复用同一个id暴力攻击</li>
-</ol>
-<h2 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a>缓存击穿</h2><h3 id="描述：-1"><a href="#描述：-1" class="headerlink" title="描述："></a>描述：</h3><p>指缓存中没有但数据库中有的数据（一般是缓存时间到期），这时由于并发用户特别多，同时读缓存没读到数据，又同时去数据库去取数据，引起数据库压力瞬间增大，造成过大压力</p>
-<h3 id="解决方案：-1"><a href="#解决方案：-1" class="headerlink" title="解决方案："></a>解决方案：</h3><ol>
-<li>设置热点数据永远不过期。</li>
-<li>加互斥锁<h4 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方法1:</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> List&lt;String&gt; <span class="title">getData01</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; result = <span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">    <span class="comment">// 从缓存读取数据</span></span><br><span class="line">    result = getDataFromCache();</span><br><span class="line">    <span class="keyword">if</span> (result.isEmpty()) &#123;</span><br><span class="line">        <span class="comment">// 从数据库查询数据</span></span><br><span class="line">        result = getDataFromDB();</span><br><span class="line">        <span class="comment">// 将查询到的数据写入缓存</span></span><br><span class="line">        setDataToCache(result);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-这种方式确实能够防止缓存失效时高并发到数据库，但是缓存没有失效的时候，在从缓存中拿数据时需要排队取锁，这必然会大大的降低了系统的吞吐量。</li>
-</ol>
-<h4 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 方法2:</span></span><br><span class="line"><span class="keyword">static</span> Object lock = <span class="keyword">new</span> Object();</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;String&gt; <span class="title">getData02</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; result = <span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">    <span class="comment">// 从缓存读取数据</span></span><br><span class="line">    result = getDataFromCache();</span><br><span class="line">    <span class="keyword">if</span> (result.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            <span class="comment">// 从数据库查询数据</span></span><br><span class="line">            result = getDataFromDB();</span><br><span class="line">            <span class="comment">// 将查询到的数据写入缓存</span></span><br><span class="line">            setDataToCache(result);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这个方法在缓存命中的时候，系统的吞吐量不会受影响，但是当缓存失效时,请求还是会打到数据库，只不过不是高并发而是阻塞而已。但是，这样会造成用户体验不佳，并且还给数据库带来额外压力。</p>
-<h4 id="方法三"><a href="#方法三" class="headerlink" title="方法三"></a>方法三</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//方法3</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;String&gt; <span class="title">getData03</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    List&lt;String&gt; result = <span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">    <span class="comment">// 从缓存读取数据</span></span><br><span class="line">    result = getDataFromCache();</span><br><span class="line">    <span class="keyword">if</span> (result.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">            <span class="comment">//双重判断,第二个以及之后的请求不必去找数据库,直接命中缓存</span></span><br><span class="line">            <span class="comment">// 查询缓存</span></span><br><span class="line">            result = getDataFromCache();</span><br><span class="line">            <span class="keyword">if</span> (result.isEmpty()) &#123;</span><br><span class="line">                <span class="comment">// 从数据库查询数据</span></span><br><span class="line">                result = getDataFromDB();</span><br><span class="line">                <span class="comment">// 将查询到的数据写入缓存</span></span><br><span class="line">                setDataToCache(result);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>双重判断虽然能够阻止高并发请求打到数据库，但是第二个以及之后的请求在命中缓存时，还是排队进行的。比如，当30个请求一起并发过来，在双重判断时，第一个请求去数据库查询并更新缓存数据，剩下的29个请求则是依次排队取缓存中取数据。请求排在后面的用户的体验会不爽。</p>
-<h4 id="方法四"><a href="#方法四" class="headerlink" title="方法四"></a>方法四</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> Lock reenLock = <span class="keyword">new</span> ReentrantLock();</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">public</span> List&lt;String&gt; <span class="title">getData04</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    List&lt;String&gt; result = <span class="keyword">new</span> ArrayList&lt;String&gt;();</span><br><span class="line">    <span class="comment">// 从缓存读取数据</span></span><br><span class="line">    result = getDataFromCache();</span><br><span class="line">    <span class="keyword">if</span> (result.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (reenLock.tryLock()) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                System.out.println(<span class="string">"我拿到锁了,从DB获取数据库后写入缓存"</span>);</span><br><span class="line">                <span class="comment">// 从数据库查询数据</span></span><br><span class="line">                result = getDataFromDB();</span><br><span class="line">                <span class="comment">// 将查询到的数据写入缓存</span></span><br><span class="line">                setDataToCache(result);</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                reenLock.unlock();<span class="comment">// 释放锁</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            result = getDataFromCache();<span class="comment">// 先查一下缓存</span></span><br><span class="line">            <span class="keyword">if</span> (result.isEmpty()) &#123;</span><br><span class="line">                System.out.println(<span class="string">"我没拿到锁,缓存也没数据,先小憩一下"</span>);</span><br><span class="line">                Thread.sleep(<span class="number">100</span>);<span class="comment">// 小憩一会儿</span></span><br><span class="line">                <span class="keyword">return</span> getData04();<span class="comment">// 重试</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>最后使用互斥锁的方式来实现，可以有效避免前面几种问题。</p>
-<p>当然，在实际分布式场景中，我们还可以使用 redis、zookeeper 等提供的分布式锁来实现。但是，如果我们的并发量如果只有几千的话，何必杀鸡焉用牛刀呢？</p>
-<h2 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h2><h3 id="描述：-2"><a href="#描述：-2" class="headerlink" title="描述："></a>描述：</h3><p>指缓存中数据大批量到过期时间，而查询数据量巨大，引起数据库压力过大甚至down机。和缓存击穿不同的是，    缓存击穿指并发查同一条数据，缓存雪崩是不同数据都过期了，很多数据都查不到从而查数据库。</p>
-<h3 id="解决方案：-2"><a href="#解决方案：-2" class="headerlink" title="解决方案："></a>解决方案：</h3><ol>
-<li>缓存数据的过期时间设置随机，防止同一时间大量数据过期现象发生。</li>
-<li>如果缓存数据库是分布式部署，将热点数据均匀分布在不同的缓存数据库中。</li>
-<li>设置热点数据永远不过期。</li>
-</ol>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://blog.csdn.net/kongtiao5/article/details/82771694" target="_blank" rel="noopener">https://blog.csdn.net/kongtiao5/article/details/82771694</a></p>
-<p><a href="https://blog.csdn.net/sanyaoxu_2/article/details/79472465" target="_blank" rel="noopener">https://blog.csdn.net/sanyaoxu_2/article/details/79472465</a></p>
-
+        <h2 id="分区概述"><a href="#分区概述" class="headerlink" title="分区概述"></a>分区概述</h2><h2 id="分区类型"><a href="#分区类型" class="headerlink" title="分区类型"></a>分区类型</h2><h2 id="分区管理"><a href="#分区管理" class="headerlink" title="分区管理"></a>分区管理</h2><h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2>
       
 
       
@@ -431,15 +386,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">缓存穿透</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">分区</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">缓存击穿</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">缓存雪崩</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">分表</a>
         		</li>
       		
 		</ul>
@@ -451,7 +402,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="/categories/缓存相关//" class="article-tag-list-link color5">缓存相关</a>
+        			<a href="/categories/数据库相关//" class="article-tag-list-link color1">数据库相关</a>
         		</li>
       		
 		</ul>
@@ -460,7 +411,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/10/24/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%E3%80%81%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E3%80%81%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E7%9A%84%E5%8C%BA%E5%88%AB%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/10/28/MySQL%E5%88%86%E5%8C%BA/">展开全文 >></a>
         </p>
       
 
@@ -490,120 +441,91 @@
 
 
   
-    <article id="post-Java数据类型" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-CAP和BASE" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/10/23/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">Java数据类型</a>
+      <a class="article-title" href="/2020/10/27/CAP%E5%92%8CBASE/">CAP和BASE</a>
     </h1>
   
 
         
-        <a href="/2020/10/23/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/" class="archive-article-date">
-  	<time datetime="2020-10-23T14:49:06.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-23</time>
+        <a href="/2020/10/27/CAP%E5%92%8CBASE/" class="archive-article-date">
+  	<time datetime="2020-10-27T14:59:19.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-27</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Java语言分为两种数据类型：</p>
-<p>1）基本数据类型（8种）</p>
-<p>2）引用数据类型</p>
-<h2 id="基本数据类型"><a href="#基本数据类型" class="headerlink" title="基本数据类型"></a>基本数据类型</h2><p>基本数据类型有：</p>
+        <h2 id="问题的提出"><a href="#问题的提出" class="headerlink" title="问题的提出"></a>问题的提出</h2><p>在计算机科学领域，分布式一致性是一个相当重要且被广泛探索与论证问题，首先来看下面三种业务场景：</p>
+<p><strong>1、火车站售票</strong><br> 假如我们的用户是一位经常坐火车的旅行家，通常他是去车站的售票处购买车票，然后拿着车票去检票口，再坐上火车，开始一段美好的旅行,一切似乎都是那么和谐。想象一下，如果他选择的目的地是杭州，而某一趟开往杭州的火车只剩下最后一张车票，可能在同一时刻，不同售票窗口的另一位乘客也购买了同一张车票。假如说售票系统没有进行一致性的保障，两人都购票成功了。而在检票口 检票的时候，其中一位乘客会被告知他的车票无效。当然，现代的中国铁路售票系统已经很少出现这样的问题了。但在这个例子中我们可以看出，用户对于系统的需求非常简单：</p>
+<p>“请售票给我，如果没有余票了，请在售票的时候就告诉我票是无效的”</p>
+<p>这就对购票系统提出了严格的一致性要求。系统的数据（本例中指的就是那趟开往杭州的火车的余票数）无论在哪个售票窗口，每时每刻都必须是准确无误的！</p>
+<p><strong>2、银行转账</strong><br> 假如我们的用户是一位刚毕业的大学生，通常在拿到第一个月工资的时候，都会选择向家里汇款。当他来到银行柜台，完成转账操作后，银行的柜台服务员会友善地提醒他：”您的转账将在N个工作日后到账！”。此时这名毕业生有一定的沮丧， 会对那名柜台服务员叮嘱：”好吧，多久没关系，钱不要少就好了！”—-这也成为了几乎所有用户对于现代银行系统最基本的需求。</p>
+<p><strong>3、网上购物</strong><br> 假如说我们的用户是一位网购达人，当他看见一件库存量为5的心仪商品，会迅速地确认购买，写下收货地址，然后下单，然而，在下单的那个瞬间，系统可能会告知该用户：”库存量不足！”。此时绝大部分消费者都会抱怨自己动作太慢，使得心爱的商品被其他人抢走了。</p>
+<p>但其实有过网购系统开发经验的工程师一定明白，在商品详情页上显示的那个库存量，通常不是该商品的真实库存量，只有在真正下单购买的时候，系统才会检查该商品的真实库存量。但是，谁在意呢？</p>
+<p><strong>问题的解读</strong><br> 对于上面三个例子，相信大家一定看出来了，我们的用户在使用不同的计算机产品时对于数据一致性的需求是不一样的：<br> 1、有些系统，既要快速地响应用户，同时还要保证系统的数据对于任意客户端都是真实可靠的，就像火车站售票系统<br> 2、有些系统，需要为用户保证绝对可靠的数据安全，虽然在数据一致性上存在延时，但最终务必保证严格的一致性，就像银行的转账系统<br> 3、有些系统，虽然向用户展示了一些可以说是”错误”的数据，但是在整个系统使用过程中，一定会在某一个流程上对系统数据进行准确无误的检查，从而避免用户发生不必要的损失，就像网购系统。</p>
+<h2 id="分布式一致性"><a href="#分布式一致性" class="headerlink" title="分布式一致性"></a>分布式一致性</h2><p>在分布式系统中要解决的一个重要问题就是数据的复制。在我们的日常开发经验中，相信很多开发人员都遇到过这样的问题：假设客户端C1将系统中的一个值K由V1更新为V2，但客户端C2无法立即读取到K的最新值，需要在一段时间之后才能 读取到。这很正常，因为数据库复制之间存在延时。</p>
+<p>分布式系统对于数据的复制需求一般都来自于以下两个原因：<br> 1、为了增加系统的可用性，以防止单点故障引起的系统不可用<br> 2、提高系统的整体性能，通过负载均衡技术，能够让分布在不同地方的数据副本都能够为用户提供服务</p>
+<p>数据复制在可用性和性能方面给分布式系统带来的巨大好处是不言而喻的，然而数据复制所带来的一致性挑战，也是每一个系统研发人员不得不面对的。</p>
+<p>所谓分布一致性问题，是指在分布式环境中引入数据复制机制之后，不同数据节点之间可能出现的，并无法依靠计算机应用程序自身解决的数据不一致的情况。简单讲，数据一致性就是指在对一个副本数据进行更新的时候，必须确保也能够更新其他的副本，否则不同副本之间的数据将不一致。</p>
+<p>那么如何解决这个问题？一种思路是”既然是由于延时动作引起的问题，那我可以将写入的动作阻塞，直到数据复制完成后，才完成写入动作”。 没错，这似乎能解决问题，而且有一些系统的架构也确实直接使用了这个思路。但这个思路在解决一致性问题的同时，又带来了新的问题：写入的性能。如果你的应用场景有非常多的写请求，那么使用这个思路之后，后续的写请求都将会阻塞在前一个请求的写操作上，导致系统整体性能急剧下降。</p>
+<p>总得来说，我们无法找到一种能够满足分布式系统所有系统属性的分布式一致性解决方案。因此，如何既保证数据的一致性，同时又不影响系统运行的性能，是每一个分布式系统都需要重点考虑和权衡的。于是，一致性级别由此诞生：</p>
+<p><strong>1、强一致性</strong><br> 这种一致性级别是最符合用户直觉的，它要求系统写入什么，读出来的也会是什么，用户体验好，但实现起来往往对系统的性能影响大。</p>
+<p><strong>2、弱一致性</strong><br> 这种一致性级别约束了系统在写入成功后，不承诺立即可以读到写入的值，也不久承诺多久之后数据能够达到一致，但会尽可能地保证到某个时间级别（比如秒级别）后，数据能够达到一致状态。</p>
+<p><strong>3、最终一致性</strong><br> 最终一致性是弱一致性的一个特例，系统会保证在一定时间内，能够达到一个数据一致的状态。这里之所以将最终一致性单独提出来，是因为它是弱一致性中非常推崇的一种一致性模型，也是业界在大型分布式系统的数据一致性上比较推崇的模型。</p>
+<h2 id="分布式环境的各种问题"><a href="#分布式环境的各种问题" class="headerlink" title="分布式环境的各种问题"></a>分布式环境的各种问题</h2><p>分布式系统体系结构从其出现之初就伴随着诸多的难题和挑战：</p>
+<p>1、通信异常<br> 从集中式向分布式演变的过程中，必然引入网络因素，由于网络本身的不可靠性，因此也引入了额外的问题。分布式系统需要在各个节点之间进行网络通信，因此每次网络通信都会伴随着网络不可用的风险，网络光纤、路由器或是DNS等硬件设备或是系统不可用都会导致最终分布式系统无法顺利完成一次网络通信。另外，即使分布式系统各个节点之间的网络通信能够正常进行，其延时也会大于单机操作。通常我们认为现代计算机体系结构中，单机内存访问的延时在纳秒数量级（通常是10ns），而正常的一次网络通信的延迟在0.1~1ms左右（相当于内存访问延时的105倍），如此巨大的延时差别，也会影响到消息的收发过程，因此消息丢失和消息延迟变得非常普遍。</p>
+<p>2、网络分区<br> 当网络由于发生异常情况，导致分布式系统中部分节点之间的网络延时不断增大，最终导致组成分布式系统的所有节点中，只有部分节点之间能够正常通信，而另一些节点则不能，我们将这个现象称为网络分区。当网络分区出现时，分布式系统会出现局部小集群，在极端情况下，这些局部小集群会独立完成原本需要整个分布式系统才能完成的功能，包括对数据的事物处理，这就对分布式一致性提出了非常大的挑战。</p>
+<p>3、三态<br> 上面两点，我们已经了解到在分布式环境下，网络可能会出现各式各样的问题，因此分布式系统的每一次请求与响应，存在特有的三态概念，即成功、失败、超时。 在传统的单机系统中，应用程序在调用一个函数之后，能够得到一个非常明确的响应：成功或失败。而在分布式系统中，由于网络是不可靠的，虽然在绝大部分情况 下，网络通信也能够接受到成功或失败的响应，当时当网络出现异常的情况下，就可能会出现超时现象，通常有以下两种情况：<br> （1）由于网络原因，该请求并没有被成功地发送到接收方，而是在发送过程中就发生了消息丢失现象；<br> （2）该请求成功地被接收方接收后，进行了处理，但是在将响应反馈给发送方的过程中，发生了消息丢失现象。<br> 当出现这样的超时现象时，网络通信的发起方是无法确定当前请求是否被成功处理的</p>
+<p>4、节点故障<br> 节点故障则是分布式环境下另一个比较常见的问题，指的是组成分布式系统的服务器节点出现的宕机或”僵死”现象，通常根据经验来说，每个节点都有可能出现故障，并且每天都在发生。</p>
+<h2 id="分布式事务"><a href="#分布式事务" class="headerlink" title="分布式事务"></a>分布式事务</h2><p>随着分布式计算的发展，事务在分布式计算领域也得到了广泛的应用。在单机数据库中，我们很容易能够实现一套满足ACID特性的事务处理系统，但在分布式数据库中，数据分散在各台不同的机器上，如何对这些数据进行分布式的事务处理具有非常大的挑战。</p>
+<p>分布式事务是指事务的参与者、支持事务的服务器、资源服务器以及事务管理器分别位于分布式系统的不同节点上，通常一个分布式事务中会涉及对多个数据源或业务系统的操作。</p>
+<p>可以设想一个最典型的分布式事务场景：一个跨银行的转账操作涉及调用两个异地的银行服务，其中一个是本地银行提供的取款服务，另一个则是目标银行提供的存款服务，这两个服务本身是无状态并且相互独立的，共同构成了一个完整的分布式事务。如果从本地银行取款成功，但是因为某种原因存款服务失败了，那么就必须回滚到取款之前的状态，否则用户可能会发现自己的钱不翼而飞了。</p>
+<p>从这个例子可以看到，一个分布式事务可以看做是多个分布式的操作序列组成的，例如上面例子的取款服务和存款服务，通常可以把这一系列分布式的操作序列称为子事务。因此，分布式事务也可以被定义为一种嵌套型的事物，同时也就具有了 ACID事物特性。但由于在分布式事务中，各个子事务的执行是分布式的，因此要实现一种能够保证ACID特性的分布式事务处理系统就显得格外复杂。在此期间出现了诸如CAP和BASE这样的分布式系统理论。</p>
+<h2 id="CAP理论"><a href="#CAP理论" class="headerlink" title="CAP理论"></a>CAP理论</h2><p>一个分布式系统不可能同时满足一致性（C：Consistency）、可用性（A：Availability）和分区容错性（P：Partition tolerance）这三个基本需求，最多只能同时满足其中两项。<br> <strong>1、一致性</strong><br> 在分布式环境下，一致性是指数据在多个副本之间能否保持一致的特性。在一致性的需求下，当一个系统在数据一致的状态下执行更新操作后，应该保证系统的数据仍然处于一直的状态。</p>
+<p>对于一个将数据副本分布在不同分布式节点上的系统来说，如果对第一个节点的数据进行了更新操作并且更新成功后，却没有使得第二个节点上的数据得到相应的更新，于是在对第二个节点的数据进行读取操作时，获取的依然是老数据（或称为脏数据），这就是典型的分布式数据不一致的情况。在分布式系统中，如果能够做到针对一个数据项的更新操作执行成功后，所有的用户都可以读取到其最新的值，那么这样的系统就被认为具有强一致性。</p>
+<p><strong>2、可用性</strong><br> 可用性是指系统提供的服务必须一直处于可用的状态，对于用户的每一个操作请求总是能够在有限的时间内返回结果。这里的重点是”有限时间内”和”返回结果”。</p>
+<p>“有限时间内”是指，对于用户的一个操作请求，系统必须能够在指定的时间内返回对应的处理结果，如果超过了这个时间范围，那么系统就被认为是不可用的。另外，”有限的时间内”是指系统设计之初就设计好的运行指标，通常不同系统之间有很大的不同，无论如何，对于用户请求，系统必须存在一个合理的响应时间，否则用户便会对系统感到失望。</p>
+<p>“返回结果”是可用性的另一个非常重要的指标，它要求系统在完成对用户请求的处理后，返回一个正常的响应结果。正常的响应结果通常能够明确地反映出队请求的处理结果，即成功或失败，而不是一个让用户感到困惑的返回结果。</p>
+<p><strong>3、分区容错性</strong><br> 分区容错性约束了一个分布式系统具有如下特性：分布式系统在遇到任何网络分区故障的时候，仍然需要能够保证对外提供满足一致性和可用性的服务，除非是整个网络环境都发生了故障。</p>
+<p>网络分区是指在分布式系统中，不同的节点分布在不同的子网络（机房或异地网络）中，由于一些特殊的原因导致这些子网络出现网络不连通的状况，但各个子网络的内部网络是正常的，从而导致整个系统的网络环境被切分成了若干个孤立的区域。 需要注意的是，组成一个分布式系统的每个节点的加入与退出都可以看作是一个特殊的网络分区。</p>
+<p>既然一个分布式系统无法同时满足一致性、可用性、分区容错性三个特点，所以我们就需要抛弃一样：</p>
+<p><img src="/assets/blogImg/CAP和BASE_01.png" width="500"></p>
+
 <table>
 <thead>
 <tr>
-<th>类型</th>
-<th>占位（bit）</th>
-<th>最大值</th>
-<th>最小值</th>
-<th>默认值</th>
-<th>举例</th>
-<th>备注</th>
+<th>选择</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>byte</td>
-<td>8</td>
-<td>128（-2^7）</td>
-<td>-128（-2^7）</td>
-<td>0</td>
-<td>byte a = 100</td>
-<td>有符号整数</td>
+<td>CA</td>
+<td>放弃分区容错性，加强一致性和可用性，其实就是传统的单机数据库的选择</td>
 </tr>
 <tr>
-<td>short</td>
-<td>16</td>
-<td>-2^15</td>
-<td>-2^15</td>
-<td>0</td>
-<td>short s = 1000</td>
-<td>有符号整数</td>
+<td>AP</td>
+<td>放弃一致性（这里说的一致性是强一致性），追求分区容错性和可用性，这是很多分布式系统设计时的选择，例如很多NoSQL系统就是如此</td>
 </tr>
 <tr>
-<td>int</td>
-<td>32</td>
-<td>-2^31</td>
-<td>-2^31</td>
-<td>0</td>
-<td>int a = 100000</td>
-<td>有符号整数</td>
-</tr>
-<tr>
-<td>long</td>
-<td>64</td>
-<td>-2^63</td>
-<td>-2^63</td>
-<td>0</td>
-<td>long a = 100000L</td>
-<td>有符号整数</td>
-</tr>
-<tr>
-<td>float</td>
-<td>32</td>
-<td></td>
-<td></td>
-<td>0.0f</td>
-<td>float f1 = 234.5f</td>
-<td>单精度浮点数</td>
-</tr>
-<tr>
-<td>double</td>
-<td>64</td>
-<td></td>
-<td></td>
-<td>0.0d</td>
-<td>double d1 = 123.4</td>
-<td>双精度浮点数</td>
-</tr>
-<tr>
-<td>char</td>
-<td>16</td>
-<td>\u0000（即为0）</td>
-<td>\uffff（即为65,535）</td>
-<td>没有默认值，必须初始化</td>
-<td>char letter = ‘A’</td>
-<td>Unicode 字符</td>
-</tr>
-<tr>
-<td>boolean</td>
-<td>1</td>
-<td></td>
-<td></td>
-<td>false</td>
-<td>boolean one = true</td>
-<td>只有两个取值：true 和 false</td>
+<td>CP</td>
+<td>放弃可用性，追求一致性和分区容错性，基本不会选择，网络问题会直接让整个系统不可用</td>
 </tr>
 </tbody></table>
-<h2 id="引用数据类型"><a href="#引用数据类型" class="headerlink" title="引用数据类型"></a>引用数据类型</h2><p>1）引用数据类型指向一个对象，指向对象的变量是引用变量。这些变量在声明时被指定为一个特定的类型，比如 Employee、Puppy 等。变量一旦声明后，类型就不能被改变了；</p>
-<p>2）对象、数组都是引用数据类型；</p>
-<p>3）所有引用类型的默认值都是null；</p>
-<p>4）一个引用变量可以用来引用任何与之兼容的类型；</p>
-<p>5）例子：Site site = new Site(“Runoob”)。</p>
+<p>需要明确的一点是，对于一个分布式系统而言，分区容错性是一个最基本的要求。因为既然是一个分布式系统，那么分布式系统中的组件必然需要被部署到不同的节点，否则也就无所谓分布式系统了，因此必然出现子网络。而对于分布式系统而言，网络问题又是一个必定会出现的异常情况，因此分区容错性也就成为了一个分布式系统必然需要面对和解决的问题。因此系统架构师往往需要把精力花在如何根据业务特点在C（一致性）和A（可用性）之间寻求平衡。</p>
+<h2 id="BASE理论"><a href="#BASE理论" class="headerlink" title="BASE理论"></a>BASE理论</h2><p>BASE是Basically Available（基本可用）、Soft state（软状态）和Eventually consistent（最终一致性）三个短语的缩写。BASE理论是对CAP中一致性和可用性权衡的结果，其来源于对大规模互联网系统分布式实践的总结， 是基于CAP定理逐步演化而来的。BASE理论的核心思想是：即使无法做到强一致性，但每个应用都可以根据自身业务特点，采用适当的方式来使系统达到最终一致性。接下来看一下BASE中的三要素：</p>
+<p>1、基本可用<br> 基本可用是指分布式系统在出现不可预知故障的时候，允许损失部分可用性。注意，这绝不等价于系统不可用。比如：</p>
+<p>（1）响应时间上的损失。正常情况下，一个在线搜索引擎需要在0.5秒之内返回给用户相应的查询结果，但由于出现故障，查询结果的响应时间增加了1~2秒</p>
+<p>（2）系统功能上的损失：正常情况下，在一个电子商务网站上进行购物的时候，消费者几乎能够顺利完成每一笔订单，但是在一些节日大促购物高峰的时候，由于消费者的购物行为激增，为了保护购物系统的稳定性，部分消费者可能会被引导到一个降级页面。</p>
+<p>2、软状态<br> 软状态指允许系统中的数据存在中间状态，并认为该中间状态的存在不会影响系统的整体可用性，即允许系统在不同节点的数据副本之间进行数据同步的过程存在延时。</p>
+<p>3、最终一致性<br> 最终一致性强调的是所有的数据副本，在经过一段时间的同步之后，最终都能够达到一个一致的状态。因此，最终一致性的本质是需要系统保证最终数据能够达到一致，而不需要实时保证系统数据的强一致性。</p>
+<p>总的来说，BASE理论面向的是大型高可用可扩展的分布式系统，和传统的事物ACID特性是相反的，它完全不同于ACID的强一致性模型，而是通过牺牲强一致性来获得可用性，并允许数据在一段时间内是不一致的，但最终达到一致状态。但同时，在实际的分布式场景中，不同业务单元和组件对数据一致性的要求是不同的，因此在具体的分布式系统架构设计过程中，ACID特性和BASE理论往往又会结合在一起。</p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.jianshu.com/p/ac0a8363c23d" target="_blank" rel="noopener">https://www.jianshu.com/p/ac0a8363c23d</a></p>
 
       
 
@@ -617,346 +539,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">基本数据类型</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">CAP</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">引用数据类型</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Java基础//" class="article-tag-list-link color2">Java基础</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/10/23/Java%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Import注解的3种用法" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/09/13/Import%E6%B3%A8%E8%A7%A3%E7%9A%843%E7%A7%8D%E7%94%A8%E6%B3%95/">@Import注解的3种用法</a>
-    </h1>
-  
-
-        
-        <a href="/2020/09/13/Import%E6%B3%A8%E8%A7%A3%E7%9A%843%E7%A7%8D%E7%94%A8%E6%B3%95/" class="archive-article-date">
-  	<time datetime="2020-09-12T16:00:25.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-09-13</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>@Import支持 三种方式<br>1）直接导入（4.2 版本之前只可以导入带有@Configuration的配置类，4.2版本之后可以导入普通类)<br>2）ImportSelector方式（SpringBoot自动配置用得最多的方式）<br>3）ImportBeanDefinitionRegistrar方式</p>
-<h2 id="直接导入"><a href="#直接导入" class="headerlink" title="直接导入"></a>直接导入</h2><p>导入普通类</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestA</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"TestA"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;TestA<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">ImportConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>带有@Configuration的配置类</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestB</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"TestB"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;TestB<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">ImportConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="ImportSelector方式"><a href="#ImportSelector方式" class="headerlink" title="ImportSelector方式"></a>ImportSelector方式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestC</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"TestC"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyImportSelector</span> <span class="keyword">implements</span> <span class="title">ImportSelector</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> String[] selectImports(AnnotationMetadata annotationMetadata) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> String[]&#123;<span class="string">"com.example.teststarterdemo.bean.TestC"</span>&#125;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;MyImportSelector<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">ImportConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="ImportBeanDefinitionRegistrar方式"><a href="#ImportBeanDefinitionRegistrar方式" class="headerlink" title="ImportBeanDefinitionRegistrar方式"></a>ImportBeanDefinitionRegistrar方式</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestD</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">hello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"TestD"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyImportBeanDefinitionRegistrar</span> <span class="keyword">implements</span> <span class="title">ImportBeanDefinitionRegistrar</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">registerBeanDefinitions</span><span class="params">(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry)</span> </span>&#123;</span><br><span class="line">        RootBeanDefinition root = <span class="keyword">new</span> RootBeanDefinition(TestD<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        registry.registerBeanDefinition(<span class="string">"testD"</span>, root);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;MyImportBeanDefinitionRegistrar<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">ImportConfig</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Spring</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">注解</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">import</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Spring相关//" class="article-tag-list-link color4">Spring相关</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/09/13/Import%E6%B3%A8%E8%A7%A3%E7%9A%843%E7%A7%8D%E7%94%A8%E6%B3%95/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-开发一个自己的Starter" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/09/12/%E5%BC%80%E5%8F%91%E4%B8%80%E4%B8%AA%E8%87%AA%E5%B7%B1%E7%9A%84Starter/">开发一个自己的Starter</a>
-    </h1>
-  
-
-        
-        <a href="/2020/09/12/%E5%BC%80%E5%8F%91%E4%B8%80%E4%B8%AA%E8%87%AA%E5%B7%B1%E7%9A%84Starter/" class="archive-article-date">
-  	<time datetime="2020-09-12T14:58:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-09-12</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>源码：<a href="https://github.com/freebie5/spring-boot-demo/tree/master/spring-boot-starter" target="_blank" rel="noopener">https://github.com/freebie5/spring-boot-demo/tree/master/spring-boot-starter</a></p>
-<p>一个最简单的SpringBoot Starter的目录结构如下所示</p>
-<p><img src="/assets/blogImg/开发一个自己的Starter_01.png" width="400"></p>
-
-<h2 id="创建一个maven工程"><a href="#创建一个maven工程" class="headerlink" title="创建一个maven工程"></a>创建一个maven工程</h2><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">project</span> <span class="attr">xmlns</span>=<span class="string">"http://maven.apache.org/POM/4.0.0"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">         <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">parent</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-demo<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.sy<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0-SNAPSHOT<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">parent</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">modelVersion</span>&gt;</span>4.0.0<span class="tag">&lt;/<span class="name">modelVersion</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-autoconfigure<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-dependencies<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.3.3.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">type</span>&gt;</span>pom<span class="tag">&lt;/<span class="name">type</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">scope</span>&gt;</span>import<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">dependencies</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">dependencyManagement</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">project</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="创建业务代码"><a href="#创建业务代码" class="headerlink" title="创建业务代码"></a>创建业务代码</h2><p>因为事demo代码，这里的业务逻辑我尽量简单，实际的业务逻辑会比较复杂</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.sy.springbootstarter.moudle;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">HelloService</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.sy.springbootstarter.moudle;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloServiceImpl</span> <span class="keyword">implements</span> <span class="title">HelloService</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"hello"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="创建自动配置项"><a href="#创建自动配置项" class="headerlink" title="创建自动配置项"></a>创建自动配置项</h2><p>要让上面的业务代码生效，在Spring中可以通过配置xml文件</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"com.sy.starterdemo.moudle"</span>&gt;</span><span class="tag">&lt;/<span class="name">context:component-scan</span>&gt;</span></span><br></pre></td></tr></table></figure>
-
-<p>在SpringBoot中可以通过<strong>自动配置项</strong>。HelloServiceAutoConfiguration类没有逻辑实现，@ComponentScan中加入这个模块的容器扫描路径</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> org.sy.springbootstarter;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.ComponentScan;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span>(&#123;<span class="string">"org.sy.springbootstarter.moudle"</span>&#125;)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloServiceAutoConfiguration</span> </span>&#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>在项目的<strong>根路径</strong>下建立<strong>META-INF/spring.factories</strong></p>
-<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># auto configure</span></span><br><span class="line"><span class="meta">org.springframework.boot.autoconfigure.EnableAutoConfiguration</span>=<span class="string">org.sy.springbootstarter.HelloServiceAutoConfiguration</span></span><br></pre></td></tr></table></figure>
-
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>《Spring源码深度解析》（第2版） 郝佳</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Spring</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">SpringBoot</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">Starter</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Spring相关//" class="article-tag-list-link color4">Spring相关</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/09/12/%E5%BC%80%E5%8F%91%E4%B8%80%E4%B8%AA%E8%87%AA%E5%B7%B1%E7%9A%84Starter/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-什么是微服务架构" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/09/02/%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84/">什么是微服务架构</a>
-    </h1>
-  
-
-        
-        <a href="/2020/09/02/%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84/" class="archive-article-date">
-  	<time datetime="2020-09-02T14:46:04.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-09-02</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="马丁福勒对微服务架构（Microservice-Architecture）的定义"><a href="#马丁福勒对微服务架构（Microservice-Architecture）的定义" class="headerlink" title="马丁福勒对微服务架构（Microservice Architecture）的定义"></a>马丁福勒对微服务架构（Microservice Architecture）的定义</h2><p>In short, the microservice architectural style is an approach to developing a single application as a <strong>suite of small services</strong>, each <strong>running in its own process</strong> and communicating with lightweight mechanisms, often an HTTP resource API. These services are <strong>built around business capabilities</strong> and <strong>independently deployable</strong> by fully automated deployment machinery. There is a <strong>bare minimum of centralized management</strong> of these services, which may be written in different programming languages and use different data storage technologies.</p>
-<p>– <a href="https://www.martinfowler.com/articles/microservices.html" target="_blank" rel="noopener">James Lewis and Martin Fowler (2014)</a></p>
-<p>总结起来微服务架构具有如下几个特点：</p>
-<p>1）把一个单体服务拆分为一系列小服务；</p>
-<p>2）每一个微服务运行在自己的<strong>进程</strong>中；</p>
-<p>3）微服务之间通过轻量级通讯机制通信，例如：http；</p>
-<p>4）<strong>围绕业务</strong>构建微服务；</p>
-<p>5）每一个微服务都<strong>独立部署</strong>；</p>
-<p>6）所有微服务都<strong>极少量的中心化管理</strong>；（例如，所有的微服务都有自己的数据库，有自己的开发语言）</p>
-<h2 id="面向服务架构（Service-Oriented-Architecture，SOA）"><a href="#面向服务架构（Service-Oriented-Architecture，SOA）" class="headerlink" title="面向服务架构（Service Oriented Architecture，SOA）"></a>面向服务架构（Service Oriented Architecture，SOA）</h2><p>1996年，Gartner最早提出SOA。2002年12月，Gartner提出SOA是”现代应用开发领域最重要的课题”，还预计到2008年，SOA将成为占有绝对优势的软件工程实践方法，主流企业现在就应该在理解和应用SOA开发技能方面进行投资。</p>
-<p>面向服务的架构（SOA，Service-Oriented Architecture）是一个组件“模式” (或 “思想”，它不是一种“技术”)，它将应用程序的不同功能单元（称为服务）进行拆分，并通过这些服务之间定义良好的接口和协议联系起来。接口是采用中立的方式进行定义的，它应该独立于实现服务的硬件平台、操作系统和编程语言。这使得构件在各种各样的系统中的服务可以以一种统一和通用的方式进行交互。</p>
-<h3 id="企业服务总线（Enterprise-Service-Bus，ESB）"><a href="#企业服务总线（Enterprise-Service-Bus，ESB）" class="headerlink" title="企业服务总线（Enterprise Service Bus，ESB）"></a>企业服务总线（Enterprise Service Bus，ESB）</h3><p>ESB的主要功能：</p>
-<p>1）对各个服务之间消息监控与路由；</p>
-<p>2）解决各个服务组件之间通信；</p>
-<p>3）控制服务版本与部署；</p>
-<p>4）满足服务像事件处理,数据转换与映射,消息与事件查询与排序,安全或异常处理,协议转环,保证服务通讯的质量。</p>
-<h2 id="微服务架构和SOA"><a href="#微服务架构和SOA" class="headerlink" title="微服务架构和SOA"></a>微服务架构和SOA</h2><p>微服务是SOA发展出来的产物，它是一种比较现代化的细粒度的SOA。</p>
-<p>区别：</p>
-<p>1）SOA强调的是异构系统的可重用性；</p>
-<p>​      微服务架构强调的是服务按业务边界做细粒度的拆分；</p>
-<p>2）SOA强调按水平架构划分为：前、后端、数据库、测试等；</p>
-<p>​      微服务架构强调按垂直架构划分，按业务能力划分，每个服务完成一种特定的功能，服务即产品；</p>
-<p>3）SOA通信使用企业服务总线ESB；</p>
-<p>​      微服务架构通信使用轻量级协议，例如HTTP；</p>
-<p>4）SOA服务共享数据存储；</p>
-<p>​      每个微服务可以有一个独立的数据存储；</p>
-<p>5）SOA中容器（如Docker）的使用不太受欢迎；</p>
-<p>​      容器在微服务方面效果很好；</p>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.martinfowler.com/articles/microservices.html" target="_blank" rel="noopener">https://www.martinfowler.com/articles/microservices.html</a></p>
-<p><a href="https://blog.csdn.net/qq_35119422/article/details/81560833" target="_blank" rel="noopener">https://blog.csdn.net/qq_35119422/article/details/81560833</a></p>
-<p><a href="https://www.cnblogs.com/jiangzhaowei/p/9168837.html" target="_blank" rel="noopener">https://www.cnblogs.com/jiangzhaowei/p/9168837.html</a></p>
-<p><a href="https://juejin.im/post/6844903480067358733" target="_blank" rel="noopener">https://juejin.im/post/6844903480067358733</a></p>
-<p><a href="https://www.cnblogs.com/icedorado/archive/2011/02/09/1950189.html" target="_blank" rel="noopener">https://www.cnblogs.com/icedorado/archive/2011/02/09/1950189.html</a></p>
-<p><a href="https://www.cnblogs.com/frankcui/p/12357518.html" target="_blank" rel="noopener">https://www.cnblogs.com/frankcui/p/12357518.html</a></p>
-<p><a href="https://www.cnblogs.com/wintersun/archive/2013/03/23/2977875.html" target="_blank" rel="noopener">https://www.cnblogs.com/wintersun/archive/2013/03/23/2977875.html</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">微服务</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">BASE</a>
         		</li>
       		
 		</ul>
@@ -977,7 +564,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/09/02/%E4%BB%80%E4%B9%88%E6%98%AF%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%9E%B6%E6%9E%84/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/10/27/CAP%E5%92%8CBASE/">展开全文 >></a>
         </p>
       
 
@@ -1007,281 +594,79 @@
 
 
   
-    <article id="post-如何查看服务器资源占用" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-SQL优化" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/08/30/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%B5%84%E6%BA%90%E5%8D%A0%E7%94%A8/">如何查看服务器资源占用</a>
+      <a class="article-title" href="/2020/10/26/SQL%E4%BC%98%E5%8C%96/">SQL优化</a>
     </h1>
   
 
         
-        <a href="/2020/08/30/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%B5%84%E6%BA%90%E5%8D%A0%E7%94%A8/" class="archive-article-date">
-  	<time datetime="2020-08-29T16:52:35.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-08-30</time>
+        <a href="/2020/10/26/SQL%E4%BC%98%E5%8C%96/" class="archive-article-date">
+  	<time datetime="2020-10-26T15:34:44.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-26</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="free命令"><a href="#free命令" class="headerlink" title="free命令"></a>free命令</h2><p>free 命令显示系统使用和空闲的内存情况，包括物理内存、交互区内存(swap)和内核缓冲区内存。</p>
-<p><img src="/assets/blogImg/如何查看服务器资源占用_01.png" width="600"></p>
+        <h2 id="SQL优化"><a href="#SQL优化" class="headerlink" title="SQL优化"></a>SQL优化</h2><p>*1）对查询进行优化，要尽量避免全表扫描，首先应考虑在 where 及 order by 涉及的列上建立索引</p>
+<p>2）应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select name from user where name is null;</span><br></pre></td></tr></table></figure>
 
-<p>free命令默认是显示单位kb，可以采用free -m和free -g命令查看，分别表示MB和GB</p>
-<p>另外，free -h会自动选择以适合理解的容量单位显示</p>
-<p><img src="/assets/blogImg/如何查看服务器资源占用_02.png" width="600"></p>
+<p>*3）应尽量避免在 where 子句中使用 != 或 &lt;&gt; 操作符，否则将引擎放弃使用索引而进行全表扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select name from user where name &#x3D; &#39;尹堞&#39;;</span><br><span class="line">select name from user where name !&#x3D; &#39;尹堞&#39;;</span><br></pre></td></tr></table></figure>
 
-<p>Mem：表示物理内存统计，如果机器剩余内存非常小，一般小于总内存的20%，则判断为系统物理内存不够<br>Swap：表示硬盘上交换分区的使用情况，如剩余空间较小，需要留意当前系统内存使用情况及负载，当Swap的used值大于0时，则表示操作系统物理内存不够，已经开始使用硬盘内存了。<br>第1行数据11G表示物理内存总量；6.5G表示总计分配给缓存(包含buffers与cache)使用的数量，但其中可能部分缓存并未实际使用；<br>1.3G表示未被分配的内存；shared表示共享内存；4.0G表示系统分配但未被使用的buffers数量；4.7G表示系统分配但未被使用的available数量</p>
-<h2 id="top命令"><a href="#top命令" class="headerlink" title="top命令"></a>top命令</h2><p>top 命令查看系统的实时负载， 包括进程、CPU负载、内存使用等等</p>
-<p><img src="/assets/blogImg/如何查看服务器资源占用_03.png" width="600"></p>
+<p>*4）应尽量避免在 where 子句中使用 or 来连接条件，如果一个字段有索引，一个字段没有索引，将导致引擎放弃使用索引而进行全表扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">select name from user where name &#x3D; &#39;尹堞&#39;;</span><br><span class="line">select name from user where name &#x3D; &#39;尹堞&#39; or age&#x3D;55;</span><br></pre></td></tr></table></figure>
 
-<h3 id="整体信息"><a href="#整体信息" class="headerlink" title="整体信息"></a>整体信息</h3><p><img src="/assets/blogImg/如何查看服务器资源占用_04.png" width="600"></p>
+<p>可以改成如下这样，这样name的索引生效了，虽然age没有建立索引还是查询比较慢</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">select name from user where name &#x3D; &#39;尹堞&#39;</span><br><span class="line">union all</span><br><span class="line">select name from user where age&#x3D;55;</span><br></pre></td></tr></table></figure>
 
-<p>us：用户空间占用CPU百分比</p>
-<p>sy：内核空间占用CPU百分比</p>
-<p>ni：用户进程空间内改变过优先级的进程占用CPU百分比</p>
-<p>id：空闲CPU百分比</p>
-<p>wa：等待输入输出的CPU时间百分比</p>
-<p>hi：CPU服务于硬件中断所耗费的时间总额</p>
-<p>si：CPU服务于软中断所耗费的时间总额</p>
-<p>st：Steal Time</p>
-<h3 id="列表的含义"><a href="#列表的含义" class="headerlink" title="列表的含义"></a>列表的含义</h3><p>PID：进程ID</p>
-<p>USER：进程所有者</p>
-<p>PR：优先级</p>
-<p>NI：nice值，负值表示高优先级，正值表示低优先级</p>
-<p>VIRT：进程使用的虚拟内存总量</p>
-<p>RES：进程使用的，未被换出的物理内存大小</p>
-<p>SHR：共享内存大小</p>
-<p>S：进程状态</p>
-<p>%CPU：上次更新到现在的CPU时间占用百分比</p>
-<p>%MEM：进程使用的物理内存百分比</p>
-<p>TIME+：进程使用CPU总时间</p>
-<p>COMMAND：命令行</p>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.cnblogs.com/hanmk/p/10556989.html" target="_blank" rel="noopener">https://www.cnblogs.com/hanmk/p/10556989.html</a></p>
+<p>5）in 和 not in 也要慎用，否则会导致全表扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select age from user where age in(11,12,13);</span><br></pre></td></tr></table></figure>
 
-      
+<p>对于连续的数值，能用 between 就不要用 in 了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select age from user where age btween 11 and 13;</span><br></pre></td></tr></table></figure>
 
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">top</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">free</a>
-        		</li>
-      		
-		</ul>
-	</div>
+<p>*6）下面的查询也将导致全表扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from user where name like &#39;%尹堞%&#39;;</span><br></pre></td></tr></table></figure>
 
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/Linux相关//" class="article-tag-list-link color3">Linux相关</a>
-        		</li>
-      		
-		</ul>
-	</div>
+<p>若要使name的索引生效，可以使用索引覆盖（即指定查询的列name）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select name from user where name like &#39;%尹堞%&#39;;</span><br></pre></td></tr></table></figure>
 
+<p>*7）应尽量避免在where子句中对字段进行函数操作，这将导致引擎放弃使用索引而进行全表扫描</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from user where length(name) &#x3D;6;</span><br></pre></td></tr></table></figure>
 
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/08/30/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8B%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%B5%84%E6%BA%90%E5%8D%A0%E7%94%A8/">展开全文 >></a>
-        </p>
-      
+<p>*8）不要在 where 子句中的“=”左边进行函数、算术运算或其他表达式运算，否则系统将可能无法正确使用索引</p>
+<p>*9）在使用索引字段作为条件时，如果该索引是复合索引，那么必须使用到该索引中的第一个字段作为条件时才能保证系统使用该索引，否则该索引将不会被使用，并且应尽可能的让字段顺序与索引顺序相一致。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F;phone和age建立索引，phone为第一个列，age为第二列</span><br><span class="line">select * from user where age&#x3D;27;</span><br><span class="line">select * from user where phone&#x3D;&#39;15742910171&#39; and age&#x3D;27;</span><br><span class="line">select * from user where phone&#x3D;&#39;15742910171&#39;;</span><br></pre></td></tr></table></figure>
 
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
+<p>*10）Update 语句，如果只更改1、2个字段，不要Update全部字段，否则频繁调用会引起明显的性能消耗，同时带来大量日志</p>
+<p>*11）对于多张大数据量（这里几百条就算大了）的表JOIN，要先分页再JOIN，否则逻辑读会很高，性能很差</p>
+<p>12）select count(*) from table；这样不带任何条件的count会引起全表扫描，并且没有任何业务意义，是一定要杜绝的</p>
+<p>*13）索引并不是越多越好，索引固然可以提高相应的 select 的效率，但同时也降低了 insert 及 update 的效率，因为 insert 或 update 时有可能会重建索引，所以怎样建索引需要慎重考虑，视具体情况而定。一个表的索引数最好不要超过6个，若太多则应考虑一些不常使用到的列上建的索引是否有必要</p>
+<p>*14）尽量使用数字型字段，若只含数值信息的字段尽量不要设计为字符型，这会降低查询和连接的性能，并会增加存储开销。这是因为引擎在处理查询和连 接时会逐个比较字符串中每一个字符，而对于数字型而言只需要比较一次就够了</p>
+<p>*15）尽可能的使用 varchar/nvarchar 代替 char/nchar ，因为首先变长字段存储空间小，可以节省存储空间，其次对于查询来说，在一个相对较小的字段内搜索效率显然要高些</p>
+<p><em>16）任何地方都不要使用 select * from t ，用具体的字段列表代替“</em>”，不要返回用不到的任何字段</p>
+<p>*17）尽量避免大事务操作，提高系统并发能力</p>
+<p>*18）尽量避免向客户端返回大数据量，若数据量过大，应该考虑相应需求是否合理</p>
+<h2 id="常见优化场景分析"><a href="#常见优化场景分析" class="headerlink" title="常见优化场景分析"></a>常见优化场景分析</h2><h3 id="limit-10000-1"><a href="#limit-10000-1" class="headerlink" title="limit 10000,1"></a>limit 10000,1</h3><p>下面的查询语句，MySQL会查询10001条记录，然后在返回第10001条数据，效率非常低，优化思路是定位到第10000条的数据，再返回后面1条数据。（参考：<a href="https://segmentfault.com/q/1010000019603338）" target="_blank" rel="noopener">https://segmentfault.com/q/1010000019603338）</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT * FROM user LIMIT 10000，1</span><br></pre></td></tr></table></figure>
 
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-hs-err-pid日志分析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/08/30/hs-err-pid%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/">hs_err_pid日志分析</a>
-    </h1>
-  
-
-        
-        <a href="/2020/08/30/hs-err-pid%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/" class="archive-article-date">
-  	<time datetime="2020-08-29T16:40:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-08-30</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="1-场景"><a href="#1-场景" class="headerlink" title="1.场景"></a>1.场景</h2><p>最近公司另一个项目组的同事离职，领导安排我接手同事的项目。项目在生产环境有2个服务，通过nginx进行负载均衡，在一次部署项目修改配置文件的时候，实施组的老同事手抖把其中一个服务的配置文件覆盖了另外一个服务的配置文件，结果悲剧就发生了。。。</p>
-<p>配置文件被覆盖后，我只能无奈手动修改其中一个服务的配置文件，把配置文件尽量还原，但是还是遗漏一处配置没有还原到，结果导致了生产环境2个服务每天下午4点10分的时候就会相继崩溃。问题相当严重。。。</p>
-<h2 id="2-问题排查"><a href="#2-问题排查" class="headerlink" title="2.问题排查"></a>2.问题排查</h2><p>JVM崩溃之后会在项目根目录下生成一个hs_err_pidXXX.log文件。打开文件，分析JVM崩溃原因。</p>
-<h3 id="崩溃事件简要分析"><a href="#崩溃事件简要分析" class="headerlink" title="崩溃事件简要分析"></a>崩溃事件简要分析</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">#</span><br><span class="line"># There is insufficient memory for the Java Runtime Environment to continue.</span><br><span class="line"># Native memory allocation (mmap) failed to map 12288 bytes for committing reserved memory.</span><br><span class="line"># Possible reasons:</span><br><span class="line">#   The system is out of physical RAM or swap space</span><br><span class="line">#   In 32 bit mode, the process size limit was hit</span><br><span class="line"># Possible solutions:</span><br><span class="line">#   Reduce memory load on the system</span><br><span class="line">#   Increase physical memory or swap space</span><br><span class="line">#   Check if swap backing store is full</span><br><span class="line">#   Use 64 bit Java on a 64 bit OS</span><br><span class="line">#   Decrease Java heap size (-Xmx&#x2F;-Xms)</span><br><span class="line">#   Decrease number of Java threads</span><br><span class="line">#   Decrease Java thread stack sizes (-Xss)</span><br><span class="line">#   Set larger code cache with -XX:ReservedCodeCacheSize&#x3D;</span><br><span class="line"># This output file may be truncated or incomplete.</span><br><span class="line">#</span><br><span class="line">#  Out of Memory Error (os_linux.cpp:2743), pid&#x3D;57833, tid&#x3D;0x00007f476f3fb700</span><br><span class="line">#</span><br><span class="line"># JRE version: Java(TM) SE Runtime Environment (8.0_191-b12) (build 1.8.0_191-b12)</span><br><span class="line"># Java VM: Java HotSpot(TM) 64-Bit Server VM (25.191-b12 mixed mode linux-amd64 compressed oops)</span><br><span class="line"># Failed to write core dump. Core dumps have been disabled. To enable core dumping, try &quot;ulimit -c unlimited&quot; before starting Java again</span><br><span class="line">#</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Native memory allocation (mmap) failed to map 12288 bytes for committing reserved memory.</span><br></pre></td></tr></table></figure>
-
-<p>从上面这句提示语我们知道JVM申请内存的时候失败了，可能的原因有：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">The system is out of physical RAM or swap space（服务器的物理内存或交换空间不够了）</span><br><span class="line">In 32 bit mode, the process size limit was hit（32位操作系统的内存寻址空间越界了）</span><br></pre></td></tr></table></figure>
-
-<p>看到这里的时候我用<strong>free -h</strong>命令查看了一下系统剩余内存和剩余交换空间，发现剩余内存还有60%作用，交换空间没有被使用。所以，我排除由于物理内存不够导致的JVM崩溃。</p>
-<h3 id="崩溃时刻正在运行的线程"><a href="#崩溃时刻正在运行的线程" class="headerlink" title="崩溃时刻正在运行的线程"></a>崩溃时刻正在运行的线程</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">---------------  T H R E A D  ---------------</span><br><span class="line"></span><br><span class="line">Current thread (0x00007f4866883800):  JavaThread &quot;pool-8105-thread-4&quot; [_thread_new, id&#x3D;52261, stack(0x00007f476f2fb000,0x00007f476f3fc000)]</span><br><span class="line"></span><br><span class="line">Stack: [0x00007f476f2fb000,0x00007f476f3fc000],  sp&#x3D;0x00007f476f3faa70,  free space&#x3D;1022k</span><br><span class="line">Native frames: (J&#x3D;compiled Java code, j&#x3D;interpreted, Vv&#x3D;VM code, C&#x3D;native code)</span><br><span class="line">V  [libjvm.so+0xace425]  VMError::report_and_die()+0x2c5</span><br><span class="line">V  [libjvm.so+0x4deb77]  report_vm_out_of_memory(char const*, int, unsigned long, VMErrorType, char const*)+0x67</span><br><span class="line">V  [libjvm.so+0x90c166]  os::pd_commit_memory(char*, unsigned long, bool)+0xf6</span><br><span class="line">V  [libjvm.so+0x903d3f]  os::commit_memory(char*, unsigned long, bool)+0x1f</span><br><span class="line">V  [libjvm.so+0x90d6a8]  os::pd_create_stack_guard_pages(char*, unsigned long)+0x48</span><br><span class="line">V  [libjvm.so+0xa772cc]  JavaThread::run()+0x2fc</span><br><span class="line">V  [libjvm.so+0x909c92]  java_start(Thread*)+0x102</span><br><span class="line">C  [libpthread.so.0+0x7aa1]</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Stack: [0x00007f476f2fb000,0x00007f476f3fc000],  sp&#x3D;0x00007f476f3faa70,  free space&#x3D;1022k</span><br></pre></td></tr></table></figure>
-
-<p>从上面这句可以知道JVM虚拟机栈剩余大小为1022k。由此，我猜想虚拟机崩溃有可能是虚拟机<strong>栈溢出</strong>，要证明是栈溢出，首先要确认虚拟机栈大小是多少。确认虚拟机栈大小需要确认2点：</p>
-<p>1）是否设置了虚拟机栈大小<strong>Xss</strong>；2）虚拟机版本。</p>
-<h4 id="1）是否设置了虚拟机栈大小Xss"><a href="#1）是否设置了虚拟机栈大小Xss" class="headerlink" title="1）是否设置了虚拟机栈大小Xss"></a>1）是否设置了虚拟机栈大小Xss</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">VM Arguments:</span><br><span class="line">jvm_args: -Xms2048m -Xmx6000m -XX:PermSize=<span class="number">125</span>m -XX:MaxPermSize=<span class="number">256</span>m </span><br><span class="line">java_command: test-<span class="number">1.0</span>-SNAPSHOT.jar --spring.profiles.active=test</span><br><span class="line">java_class_path (initial): test-<span class="number">1.0</span>-SNAPSHOT.jar</span><br><span class="line">Launcher Type: SUN_STANDARD</span><br></pre></td></tr></table></figure>
-
-<p>上面这段也是hs_err_pidXXX.log日志的内容，上面这段记录启动JVM的启动参数，明显我没有配置JVM虚拟机栈的大小Xss，所以Xss大小是默认值，而Xss默认值大小根据JVM版本和服务器操作系统版本来确定。</p>
-<h4 id="2）虚拟机版本"><a href="#2）虚拟机版本" class="headerlink" title="2）虚拟机版本"></a>2）虚拟机版本</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">---------------  S Y S T E M  ---------------</span><br><span class="line"></span><br><span class="line">OS:Red Hat Enterprise Linux Server release 6.7 (Santiago)</span><br><span class="line"></span><br><span class="line">uname:Linux 2.6.32-573.el6.x86_64 #1 SMP Wed Feb 24 13:34:24 CST 2016 x86_64</span><br><span class="line">libc:glibc 2.12 NPTL 2.12 </span><br><span class="line">rlimit: STACK 10240k, CORE 0k, NPROC 64106, NOFILE 65536, AS infinity</span><br><span class="line">load average:0.03 0.08 0.04</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm_info: Java HotSpot(TM) 64-Bit Server VM (25.191-b12) for linux-amd64 JRE (1.8.0_191-b12), built on Oct  6 2018 05:43:09 by &quot;java_re&quot; with gcc 7.3.0</span><br></pre></td></tr></table></figure>
-
-<p>上面这段也是hs_err_pidXXX.log日志的内容，可以清楚的知道，JVM版本是<strong>linux-amd64 JRE (1.8.0_191-b12)</strong>，服务器操作系统版本是<strong>Red Hat Enterprise Linux Server release 6.7 (Santiago)</strong>。</p>
-<h4 id="3）结论"><a href="#3）结论" class="headerlink" title="3）结论"></a>3）结论</h4><p>通过上面两步可以确认虚拟机栈大小Xss使用了默认值，而且JVM版本是64位的JDK1.8。通过Java的官网我查找到该版本的默认Xss值为1024k。从而确认线程<strong>栈溢出</strong>。</p>
-<h3 id="JVM里面的所有线程"><a href="#JVM里面的所有线程" class="headerlink" title="JVM里面的所有线程"></a>JVM里面的所有线程</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">---------------  P R O C E S S  ---------------</span><br><span class="line"></span><br><span class="line">Java Threads: ( &#x3D;&gt; current thread )</span><br><span class="line">&#x3D;&gt;0x00007f4866883800 JavaThread &quot;pool-8105-thread-4&quot; [_thread_new, id&#x3D;52261, stack(0x00007f476f2fb000,0x00007f476f3fc000)]</span><br><span class="line">  0x00007f4866881800 JavaThread &quot;MQTT Snd: client_test_010&quot; [_thread_blocked, id&#x3D;52260, stack(0x00007f476f3fc000,0x00007f476f4fd000)]</span><br><span class="line">  0x00007f486687f800 JavaThread &quot;MQTT Rec: client_test_010&quot; [_thread_blocked, id&#x3D;52259, stack(0x00007f476f4fd000,0x00007f476f5fe000)]</span><br><span class="line">  0x00007f486687d000 JavaThread &quot;MQTT Call: client_test_010&quot; [_thread_blocked, id&#x3D;52258, stack(0x00007f476f5fe000,0x00007f476f6ff000)]</span><br><span class="line">...</span><br><span class="line">省略了中间的信息</span><br><span class="line">...</span><br><span class="line">  0x00007f4fc0002000 JavaThread &quot;MQTT Call: client_test_010&quot; [_thread_blocked, id&#x3D;58101, stack(0x00007f5098730000,0x00007f5098831000)]</span><br><span class="line">  0x00007f4fc0003800 JavaThread &quot;MQTT Snd: client_test_010&quot; [_thread_blocked, id&#x3D;58100, stack(0x00007f509862f000,0x00007f5098730000)]</span><br><span class="line">  0x00007f4fc0005000 JavaThread &quot;MQTT Rec: client_test_010&quot; [_thread_blocked, id&#x3D;58099, stack(0x00007f5098a33000,0x00007f5098b34000)]</span><br><span class="line">  0x00007f4ffc082000 JavaThread &quot;MQTT Con: client_test_010&quot; [_thread_blocked, id&#x3D;58098, stack(0x00007f50936f9000,0x00007f50937fa000)]</span><br><span class="line">  0x00007f4f9801a800 JavaThread &quot;DubboResponseTimeoutScanTimer&quot; daemon [_thread_blocked, id&#x3D;57998, stack(0x00007f50924af000,0x00007f50925b0000)]</span><br><span class="line">  0x00007f4f8805e000 JavaThread &quot;commons-pool-EvictionTimer&quot; daemon [_thread_blocked, id&#x3D;57953, stack(0x00007f509842d000,0x00007f509852e000)]</span><br><span class="line">  0x00007f50b8009000 JavaThread &quot;DestroyJavaVM&quot; [_thread_blocked, id&#x3D;57834, stack(0x00007f50bde6e000,0x00007f50bdf6f000)]</span><br><span class="line">  0x00007f50b9f7b000 JavaThread &quot;http-nio-9130-AsyncTimeout&quot; daemon [_thread_blocked, id&#x3D;57940, stack(0x00007f5090f44000,0x00007f5091045000)]</span><br><span class="line">  0x00007f50b9f79000 JavaThread &quot;http-nio-9130-Acceptor-0&quot; daemon [_thread_in_native, id&#x3D;57939, stack(0x00007f5091045000,0x00007f5091146000)]</span><br><span class="line">  0x00007f50b9f77000 JavaThread &quot;http-nio-9130-ClientPoller-1&quot; daemon [_thread_in_native, id&#x3D;57938, stack(0x00007f5091146000,0x00007f5091247000)]</span><br><span class="line">  0x00007f50ba0af000 JavaThread &quot;http-nio-9130-ClientPoller-0&quot; daemon [_thread_in_native, id&#x3D;57937, stack(0x00007f5091247000,0x00007f5091348000)]</span><br><span class="line">  0x00007f50ba0ad000 JavaThread &quot;http-nio-9130-exec-10&quot; daemon [_thread_blocked, id&#x3D;57936, stack(0x00007f5091348000,0x00007f5091449000)]</span><br><span class="line">  0x00007f50ba0ab000 JavaThread &quot;http-nio-9130-exec-9&quot; daemon [_thread_blocked, id&#x3D;57935, stack(0x00007f5091449000,0x00007f509154a000)]</span><br><span class="line">  0x00007f50ba0a9000 JavaThread &quot;http-nio-9130-exec-8&quot; daemon [_thread_blocked, id&#x3D;57934, stack(0x00007f509154a000,0x00007f509164b000)]</span><br><span class="line">  0x00007f50b9d35000 JavaThread &quot;http-nio-9130-exec-7&quot; daemon [_thread_blocked, id&#x3D;57933, stack(0x00007f509164b000,0x00007f509174c000)]</span><br><span class="line">  0x00007f50b9d33000 JavaThread &quot;http-nio-9130-exec-6&quot; daemon [_thread_blocked, id&#x3D;57932, stack(0x00007f509174c000,0x00007f509184d000)]</span><br><span class="line">  0x00007f50b9d31000 JavaThread &quot;http-nio-9130-exec-5&quot; daemon [_thread_blocked, id&#x3D;57931, stack(0x00007f509184d000,0x00007f509194e000)]</span><br><span class="line">  0x00007f50b9d2f000 JavaThread &quot;http-nio-9130-exec-4&quot; daemon [_thread_blocked, id&#x3D;57930, stack(0x00007f509194e000,0x00007f5091a4f000)]</span><br><span class="line">  0x00007f50b9e7a000 JavaThread &quot;http-nio-9130-exec-3&quot; daemon [_thread_blocked, id&#x3D;57929, stack(0x00007f5091cad000,0x00007f5091dae000)]</span><br><span class="line">  0x00007f50b9e79000 JavaThread &quot;http-nio-9130-exec-2&quot; daemon [_thread_in_native, id&#x3D;57928, stack(0x00007f5098831000,0x00007f5098932000)]</span><br><span class="line">  0x00007f50b9e78000 JavaThread &quot;http-nio-9130-exec-1&quot; daemon [_thread_blocked, id&#x3D;57927, stack(0x00007f509afd5000,0x00007f509b0d6000)]</span><br><span class="line">  0x00007f50b9a5b800 JavaThread &quot;NioBlockingSelector.BlockPoller-1&quot; daemon [_thread_in_native, id&#x3D;57926, stack(0x00007f50a008e000,0x00007f50a018f000)]</span><br><span class="line">  0x00007f50b97a2800 JavaThread &quot;IdleConnectionMonitorThread&quot; daemon [_thread_blocked, id&#x3D;57915, stack(0x00007f5091fae000,0x00007f50920af000)]</span><br><span class="line">  0x00007f4fc801c800 JavaThread &quot;New I&#x2F;O client worker #1-3&quot; daemon [_thread_in_native, id&#x3D;57913, stack(0x00007f50925b0000,0x00007f50926b1000)]</span><br><span class="line">  0x00007f50b9c44000 JavaThread &quot;dubbo-remoting-client-heartbeat-thread-2&quot; daemon [_thread_blocked, id&#x3D;57912, stack(0x00007f50926b1000,0x00007f50927b2000)]</span><br><span class="line">  0x00007f4fc8036800 JavaThread &quot;New I&#x2F;O client worker #1-2&quot; daemon [_thread_in_native, id&#x3D;57910, stack(0x00007f50928b3000,0x00007f50929b4000)]</span><br><span class="line">  0x00007f4fd4001000 JavaThread &quot;DubboClientReconnectTimer-thread-2&quot; daemon [_thread_blocked, id&#x3D;57909, stack(0x00007f509852e000,0x00007f509862f000)]</span><br><span class="line">  0x00007f50b9ab5800 JavaThread &quot;schedulerFactoryBean_QuartzSchedulerThread&quot; [_thread_blocked, id&#x3D;57908, stack(0x00007f5092bb4000,0x00007f5092cb5000)]</span><br><span class="line">  0x00007f50b9ab3800 JavaThread &quot;schedulerFactoryBean_Worker-5&quot; [_thread_blocked, id&#x3D;57907, stack(0x00007f5092cb5000,0x00007f5092db6000)]</span><br><span class="line">  0x00007f50b9ab1800 JavaThread &quot;schedulerFactoryBean_Worker-4&quot; [_thread_blocked, id&#x3D;57906, stack(0x00007f5092db6000,0x00007f5092eb7000)]</span><br><span class="line">  0x00007f50b9aaf800 JavaThread &quot;schedulerFactoryBean_Worker-3&quot; [_thread_blocked, id&#x3D;57905, stack(0x00007f5092eb7000,0x00007f5092fb8000)]</span><br><span class="line">  0x00007f50b9aae000 JavaThread &quot;schedulerFactoryBean_Worker-2&quot; [_thread_blocked, id&#x3D;57904, stack(0x00007f5092fb8000,0x00007f50930b9000)]</span><br><span class="line">  0x00007f50b9aad000 JavaThread &quot;schedulerFactoryBean_Worker-1&quot; [_thread_blocked, id&#x3D;57903, stack(0x00007f50930b9000,0x00007f50931ba000)]</span><br><span class="line">  0x00007f50b9a96000 JavaThread &quot;dubbo-remoting-client-heartbeat-thread-1&quot; daemon [_thread_blocked, id&#x3D;57902, stack(0x00007f50935f8000,0x00007f50936f9000)]</span><br><span class="line">  0x00007f4fc801b000 JavaThread &quot;New I&#x2F;O client worker #1-1&quot; daemon [_thread_in_native, id&#x3D;57900, stack(0x00007f50937fa000,0x00007f50938fb000)]</span><br><span class="line">  0x00007f50b984c000 JavaThread &quot;DubboClientReconnectTimer-thread-1&quot; daemon [_thread_blocked, id&#x3D;57898, stack(0x00007f50939fc000,0x00007f5093afd000)]</span><br><span class="line">  0x00007f50b9705000 JavaThread &quot;DubboSaveRegistryCache-thread-1&quot; daemon [_thread_blocked, id&#x3D;57892, stack(0x00007f5093cfd000,0x00007f5093dfe000)]</span><br><span class="line">  0x00007f50b96ec800 JavaThread &quot;main-EventThread&quot; daemon [_thread_blocked, id&#x3D;57891, stack(0x00007f5093dfe000,0x00007f5093eff000)]</span><br><span class="line">  0x00007f50b96eb800 JavaThread &quot;main-SendThread(172.28.130.14:2181)&quot; daemon [_thread_in_native, id&#x3D;57890, stack(0x00007f5093eff000,0x00007f5094000000)]</span><br><span class="line">  0x00007f50b96b6000 JavaThread &quot;ZkClient-EventThread-35-172.28.130.14:2181&quot; daemon [_thread_blocked, id&#x3D;57889, stack(0x00007f509802b000,0x00007f509812c000)]</span><br><span class="line">  0x00007f50b96ca000 JavaThread &quot;DubboRegistryFailedRetryTimer-thread-1&quot; daemon [_thread_blocked, id&#x3D;57888, stack(0x00007f509812c000,0x00007f509822d000)]</span><br><span class="line">  0x00007f50b93ee800 JavaThread &quot;Druid-ConnectionPool-Destroy-1169324755&quot; daemon [_thread_blocked, id&#x3D;57880, stack(0x00007f5098d34000,0x00007f5098e35000)]</span><br><span class="line">  0x00007f50b93c5000 JavaThread &quot;Druid-ConnectionPool-Create-1169324755&quot; daemon [_thread_blocked, id&#x3D;57879, stack(0x00007f5098e35000,0x00007f5098f36000)]</span><br><span class="line">  0x00007f50b93c8800 JavaThread &quot;OracleTimeoutPollingThread&quot; daemon [_thread_blocked, id&#x3D;57878, stack(0x00007f5098f36000,0x00007f5099037000)]</span><br><span class="line">  0x00007f50b8b9d000 JavaThread &quot;container-0&quot; [_thread_blocked, id&#x3D;57875, stack(0x00007f5099637000,0x00007f5099738000)]</span><br><span class="line">  0x00007f50b8b9c000 JavaThread &quot;ContainerBackgroundProcessor[StandardEngine[Tomcat]]&quot; daemon [_thread_blocked, id&#x3D;57874, stack(0x00007f5099738000,0x00007f5099839000)]</span><br><span class="line">  0x00007f503414c800 JavaThread &quot;Scheduler_QuartzSchedulerThread&quot; [_thread_blocked, id&#x3D;57873, stack(0x00007f5099839000,0x00007f509993a000)]</span><br><span class="line">  0x00007f503412e800 JavaThread &quot;Scheduler_Worker-5&quot; [_thread_blocked, id&#x3D;57872, stack(0x00007f509993a000,0x00007f5099a3b000)]</span><br><span class="line">  0x00007f503412c800 JavaThread &quot;Scheduler_Worker-4&quot; [_thread_blocked, id&#x3D;57871, stack(0x00007f5099a3b000,0x00007f5099b3c000)]</span><br><span class="line">  0x00007f503412a800 JavaThread &quot;Scheduler_Worker-3&quot; [_thread_blocked, id&#x3D;57870, stack(0x00007f5099b3c000,0x00007f5099c3d000)]</span><br><span class="line">  0x00007f5034129000 JavaThread &quot;Scheduler_Worker-2&quot; [_thread_blocked, id&#x3D;57869, stack(0x00007f5099c3d000,0x00007f5099d3e000)]</span><br><span class="line">  0x00007f5034125000 JavaThread &quot;Scheduler_Worker-1&quot; [_thread_blocked, id&#x3D;57868, stack(0x00007f509a95c000,0x00007f509aa5d000)]</span><br><span class="line">  0x00007f50b8234000 JavaThread &quot;Service Thread&quot; daemon [_thread_blocked, id&#x3D;57851, stack(0x00007f50a0a56000,0x00007f50a0b57000)]</span><br><span class="line">  0x00007f50b820f000 JavaThread &quot;C1 CompilerThread3&quot; daemon [_thread_blocked, id&#x3D;57850, stack(0x00007f50a0b57000,0x00007f50a0c58000)]</span><br><span class="line">  0x00007f50b820c800 JavaThread &quot;C2 CompilerThread2&quot; daemon [_thread_blocked, id&#x3D;57849, stack(0x00007f50a0c58000,0x00007f50a0d59000)]</span><br><span class="line">  0x00007f50b820a800 JavaThread &quot;C2 CompilerThread1&quot; daemon [_thread_blocked, id&#x3D;57848, stack(0x00007f50a0d59000,0x00007f50a0e5a000)]</span><br><span class="line">  0x00007f50b8207800 JavaThread &quot;C2 CompilerThread0&quot; daemon [_thread_blocked, id&#x3D;57847, stack(0x00007f50a0e5a000,0x00007f50a0f5b000)]</span><br><span class="line">  0x00007f50b8206000 JavaThread &quot;Signal Dispatcher&quot; daemon [_thread_blocked, id&#x3D;57846, stack(0x00007f50a0f5b000,0x00007f50a105c000)]</span><br><span class="line">  0x00007f50b81d3000 JavaThread &quot;Finalizer&quot; daemon [_thread_blocked, id&#x3D;57845, stack(0x00007f50a105c000,0x00007f50a115d000)]</span><br><span class="line">  0x00007f50b81d0800 JavaThread &quot;Reference Handler&quot; daemon [_thread_blocked, id&#x3D;57844, stack(0x00007f50a115d000,0x00007f50a125e000)]</span><br></pre></td></tr></table></figure>
-
-<p>所有的线程信息太多了，所以我省略了中间部分，通过分析，我发现关于MQTT的线程有很多都是<strong>阻塞blocked</strong>的，从而我可以进一步推断，引起JVM栈溢出的原因是服务一直在创建MQTT线程，而创建的MQTT线程一直阻塞不释放JVM虚拟机栈内存，最终导致了JVM栈溢出。</p>
-<h2 id="3-恍然大悟"><a href="#3-恍然大悟" class="headerlink" title="3.恍然大悟"></a>3.恍然大悟</h2><p>为什么MQTT一直在创建线程，而且线程一直阻塞？想了好久之后才惊觉，最近有一台服务的配置文件被覆盖过，而配置文件里边刚好配置了MQTT客户端id，MQTT通过这个配置唯一标识一个客户端链接，因为配置文件被覆盖，导致两个服务的MQTT客户端id一模一样，最终导致相互争抢客户端id创建了很多MQTT线程，而且阻塞不释放资源。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">JVM</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/日常开发记录//" class="article-tag-list-link color2">日常开发记录</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/08/30/hs-err-pid%E6%97%A5%E5%BF%97%E5%88%86%E6%9E%90/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-URI和URL的区别" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/08/30/URI%E5%92%8CURL%E7%9A%84%E5%8C%BA%E5%88%AB/">URI和URL的区别</a>
-    </h1>
-  
-
-        
-        <a href="/2020/08/30/URI%E5%92%8CURL%E7%9A%84%E5%8C%BA%E5%88%AB/" class="archive-article-date">
-  	<time datetime="2020-08-29T16:22:05.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-08-30</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="URI和URL"><a href="#URI和URL" class="headerlink" title="URI和URL"></a>URI和URL</h2><p>URI（Uniform Resource Identifier）统一资源标识符，是一个紧凑的字符串用来标识抽象或物理资源。</p>
-<p>URL（Uniform Resource Locator）统一资源定位符，是URI的子集，除了确定一个资源，还提供一种定位该资源的访问机制。</p>
-<p>下面就来看看例子吧，这些例子都是摘自权威的RFC：</p>
+<p>1）select *很有可能返回不需要的列，如果可以指定具体需要哪些列会更好，减少结果集整体大小。<br>2）limit 10000,1，分不同情况的优化。</p>
 <ul>
-<li><code>ftp://ftp.is.co.za/rfc/rfc1808.txt</code> (also a URL because of the protocol)</li>
-<li><code>http://www.ietf.org/rfc/rfc2396.txt</code> (also a URL because of the protocol)</li>
-<li><code>ldap://[2001:db8::7]/c=GB?objectClass?one</code> (also a URL because of the protocol)</li>
-<li><code>mailto:John.Doe@example.com</code> (also a URL because of the protocol)</li>
-<li><code>news:comp.infosystems.www.servers.unix</code> (also a URL because of the protocol)</li>
-<li><code>tel:+1-816-555-1212</code></li>
-<li><code>telnet://192.0.2.16:80/</code> (also a URL because of the protocol)</li>
-<li><code>urn:oasis:names:specification:docbook:dtd:xml:4.1.2</code></li>
+<li><p>对于user表主键id是连续的，可以改写select id,username,age from user where id &gt; 10000 limit 1。</p>
+</li>
+<li><p>对于user表主键id有断层的，对于select * from user limit 10000,1是没有优化空间的。要优化，必须加where条件，例如：select id,username,age from user where user_city=’广州’ limit 10000,1。这样就可以改写成select id,username,age from user a inner join (select id from user where user_city=’广州’ limit 10000,1) b on a.id=b.id，但要配合覆盖索引idx(user_city)才有效果，优化的思想是先从比user表小的覆盖索引上获取到主键id，再回表到主键索引里获取其他列的数据。</p>
+</li>
 </ul>
-<p>这些全都是URI, 其中有些URI同时也是URL。哪些? 就是那些提供了访问机制的。</p>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.cnblogs.com/hust-ghtao/p/4724885.html" target="_blank" rel="noopener">https://www.cnblogs.com/hust-ghtao/p/4724885.html</a></p>
+<p>3）大多数情况下，主键id很有可能是断层的，而且假设实际需求就是select * from user limit 10000,1，加了where条件就不符合需求。那么这种情况下，就只能对表结构和表数据下手了，想办法将行数据大小减少，例如恰当地将varchar换成int，按照三范式减少数据冗余等，目的是使得每一个数据页能装下更多的行数据，即使全表扫描，读取尽可能少的数据页。<br>4）SELECT * FROM user LIMIT 10000，1来看，就是简单的获取user表第10001条数据，看不到有什么实质的查询意义，而且对于select id,username from user limit 10000,1，这样在username列上有索引和无索引会使得返回结果集有可能是不一样的，应该结合业务逻辑来看看有没有优化空间。</p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.cnblogs.com/yunfeifei/p/3850440.html" target="_blank" rel="noopener">https://www.cnblogs.com/yunfeifei/p/3850440.html</a></p>
 
       
 
@@ -1295,11 +680,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">URI</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">URL</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">SQL优化</a>
         		</li>
       		
 		</ul>
@@ -1311,7 +692,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="/categories/网络相关//" class="article-tag-list-link color5">网络相关</a>
+        			<a href="/categories/数据库相关//" class="article-tag-list-link color1">数据库相关</a>
         		</li>
       		
 		</ul>
@@ -1320,7 +701,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/08/30/URI%E5%92%8CURL%E7%9A%84%E5%8C%BA%E5%88%AB/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/10/26/SQL%E4%BC%98%E5%8C%96/">展开全文 >></a>
         </p>
       
 
@@ -1350,43 +731,80 @@
 
 
   
-    <article id="post-JVM之安全点和安全区域" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-JVM内存溢出定位" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2020/08/22/JVM%E4%B9%8B%E5%AE%89%E5%85%A8%E7%82%B9%E5%92%8C%E5%AE%89%E5%85%A8%E5%8C%BA%E5%9F%9F/">JVM之安全点和安全区域</a>
+      <a class="article-title" href="/2020/10/26/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%AE%9A%E4%BD%8D/">JVM内存溢出定位</a>
     </h1>
   
 
         
-        <a href="/2020/08/22/JVM%E4%B9%8B%E5%AE%89%E5%85%A8%E7%82%B9%E5%92%8C%E5%AE%89%E5%85%A8%E5%8C%BA%E5%9F%9F/" class="archive-article-date">
-  	<time datetime="2020-08-22T14:29:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-08-22</time>
+        <a href="/2020/10/26/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%AE%9A%E4%BD%8D/" class="archive-article-date">
+  	<time datetime="2020-10-26T15:28:02.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-26</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="什么是OopMap"><a href="#什么是OopMap" class="headerlink" title="什么是OopMap"></a>什么是OopMap</h2><p>目前主流的JVM（例如，Hot Spot）使用的都是<strong>准确式内存管理</strong>。什么是准确式内存管理？简单讲就是JVM知道内存中某个位置的数据是什么类型。例如，内存中有一个32位的整数123456，他到底是一个reference类型指向123456的内存地址，还是一个数值位123456的整数，JVM通过准确式内存管理能够分辨出来。</p>
-<p>在Hot Spot的实现中，使用一组称为<strong>OopMap</strong>的数据结构类实现准确式内存管理。OopMap存储的数据包括：</p>
-<p>1）在类加载完成的时候，Hot Spot就把对象内什么偏移量上是什么类型的数据计算出来；</p>
-<p>2）在JIT编译过程中，也会在特定的位置记录下栈和寄存器中哪些位置是引用。</p>
-<p>在OopMap的协助下，Hot Spot可以快速且准确地完成GC Roots枚举。</p>
-<h2 id="安全点（Safepoint）"><a href="#安全点（Safepoint）" class="headerlink" title="安全点（Safepoint）"></a>安全点（Safepoint）</h2><p>什么是安全点？</p>
-<p>JVM在特定的位置停下来进行GC，这个特定的位置就是<strong>安全点</strong>。选定安全点有2个关键的点要注意：</p>
-<p>1）安全点的选定既不能太少以至于让GC等待时间太长，也不能过于频繁以至于过分增大运行时的负荷，所以，安全点的选定基本上是以程序<strong>是否具有让程序长时间执行的特征</strong>为标准进行选定的。<strong>长时间执行</strong>的最明显特征就是指令序列复用，例如：方法调用，循环跳转，异常跳转等。</p>
-<p>2）如何在GC发送时让所有线程都执行到最近的安全点上再停顿下来。一般有2个方案：<strong>抢先式中断</strong>和<strong>主动式中断</strong>。</p>
-<p><strong>抢先式中断</strong>不需要线程的执行代码去主动配合，在GC发送时，首先把所有线程中断，如果发现有线程中断的地方不在安全点上，就恢复线程，然它继续执行到安全点上。（几乎没用虚拟机采用）</p>
-<p><strong>主动式中断</strong>在GC发生时，不直接对线程操作，仅仅简单地设置一个标志，各个线程执行时主动去<strong>轮询</strong>这个标志，线程发现中断标志为真时就自己中断挂起。<strong>线程轮询的地方和安全点是重合的</strong>。</p>
-<h2 id="安全区域（Safe-Region）"><a href="#安全区域（Safe-Region）" class="headerlink" title="安全区域（Safe Region）"></a>安全区域（Safe Region）</h2><p><strong>安全点</strong>解决了线程<strong>执行时</strong>在不太长的时间内就可以进行GC。但是，当线程<strong>不执行时</strong>（例如：WAITING状态，BLOCKED状态）无法让线程继续执行到安全点。这个时候就需要<strong>安全区域</strong>了。</p>
-<p>什么是安全区域？</p>
-<p>安全区域指在一段代码片段之中，引用关系不会发生变化。在这个区域中的任意地方进行GC都是安全的。</p>
-<p>安全区域机制如下：</p>
-<p>1）在线程执行到安全区域中的代码时，首先标识自己已经进入安全区域，当在这段时间里JVM进行GC时，就不用管标识自己为安全区域的线程了；</p>
-<p>2）当线程要离开安全区域时，线程检查JVM是否已经完成GC Root枚举，如果完成了，那线程就继续执行，否则，线程就必须等待直到收到可以安全离开安全区域的信号为止。</p>
+        <h2 id="准备测试环境"><a href="#准备测试环境" class="headerlink" title="准备测试环境"></a>准备测试环境</h2><p>测试代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Item</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">byte</span>[] memory = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1</span>*<span class="number">1024</span>*<span class="number">1024</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        List&lt;Item&gt; list = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">            list.add(<span class="keyword">new</span> Item());</span><br><span class="line">            Thread.sleep(<span class="number">1000</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>配置JVM参数</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Dfile.encoding=UTF-8 -Xmx180M -Xms180M -Xmn60M -XX:SurvivorRatio=8 -XX:+HeapDumpOnOutOfMemoryError</span><br></pre></td></tr></table></figure>
+
+<p>运行结果如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">Dumping heap to java_pid1052.hprof ...</span><br><span class="line">Exception in thread "main" java.lang.OutOfMemoryError: Java heap space</span><br><span class="line">	at com.example.mysqldemo.Test$Item.&lt;init&gt;(Test.java:9)</span><br><span class="line">	at com.example.mysqldemo.Test.main(Test.java:15)</span><br><span class="line">Heap dump file created [175960409 bytes in 0.120 secs]</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用工具进行排查"><a href="#使用工具进行排查" class="headerlink" title="使用工具进行排查"></a>使用工具进行排查</h2><h3 id="使用eclipse的MAT"><a href="#使用eclipse的MAT" class="headerlink" title="使用eclipse的MAT"></a>使用eclipse的MAT</h3><p>打开内存溢出时JVM生成的hprof文件</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_01.png" width="800"></p>
+
+<p>点击Dominator Tree按钮</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_02.png" width="800"></p>
+
+<p>按照heap使用百分比，从大到小排列，可以知道是main线程死循环一直创建<strong>Test$Item</strong>类添加到<strong>ArrayList</strong>中导致内存溢出</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_03.png" width="800"></p>
+
+<h3 id="使用JProfiler"><a href="#使用JProfiler" class="headerlink" title="使用JProfiler"></a>使用JProfiler</h3><p>打开内存溢出时JVM生成的hprof文件</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_04.png" width="800"></p>
+
+<p>点击Biggest Objects，选择占用最多堆内存的对象，右击选择Use Selected Objects，选择Incoming referrences</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_05.png" width="800"></p>
+
+<p>点击Show In Graph，可以清楚的看到ArrayList被调用的过程</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_06.png" width="800"></p>
+
+<p><img src="/assets/blogImg/JVM内存溢出定位_07.png" width="800"></p>
+
+<h3 id="使用jvisualvm"><a href="#使用jvisualvm" class="headerlink" title="使用jvisualvm"></a>使用jvisualvm</h3><p>打开内存溢出时JVM生成的hprof文件</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_08.png" width="800"></p>
+
+<p>点击类，按照所有类实例占堆内存大小，从大到小排序</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_09.png" width="800"></p>
+
+<p>选中占用最多的<strong>byte[]</strong>，右击选择“在实例视图中显示”</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_10.png" width="800"></p>
+
+<p>选择其中一个实例，可以看到引用关系</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_11.png" width="800"></p>
+
+<p>右击ArrayList的引用，选中“在线程中引用”，可以查看调用栈</p>
+<p><img src="/assets/blogImg/JVM内存溢出定位_12.png" width="800"></p>
+
+<p><img src="/assets/blogImg/JVM内存溢出定位_13.png" width="800"></p>
+
+<h2 id="常用JVM配置参数"><a href="#常用JVM配置参数" class="headerlink" title="常用JVM配置参数"></a>常用JVM配置参数</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">//设置JVM最大可用内存为180M</span><br><span class="line">-Xmx180M</span><br><span class="line">//设置JVM初始内存为180M。此值可以设置与-Xmx相同，以避免每次垃圾回收完成后JVM重新分配内存</span><br><span class="line">-Xms180M</span><br><span class="line">//设置年轻代大小为2G</span><br><span class="line">-Xmn2G</span><br><span class="line">//设置每个线程的栈大小。JDK5.0以后每个线程堆栈大小为1M，以前每个线程堆栈大小为256K</span><br><span class="line">-Xss128K</span><br><span class="line">//内存溢出是生成hprof文件</span><br><span class="line">-XX:+HeapDumpOnOutOfMemoryError</span><br></pre></td></tr></table></figure>
+
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>JVM参数</p>
+<p><a href="https://www.cnblogs.com/likehua/p/3369823.html" target="_blank" rel="noopener">https://www.cnblogs.com/likehua/p/3369823.html</a></p>
+<p>JVM内存溢出定位</p>
+<p><a href="https://www.cnblogs.com/godoforange/p/11544004.html" target="_blank" rel="noopener">https://www.cnblogs.com/godoforange/p/11544004.html</a></p>
+<p><a href="http://itindex.net/detail/46879-java-%E5%86%85%E5%AD%98-%E6%BA%A2%E5%87%BA" target="_blank" rel="noopener">http://itindex.net/detail/46879-java-%E5%86%85%E5%AD%98-%E6%BA%A2%E5%87%BA</a></p>
+<p><a href="https://www.cnblogs.com/firstdream/p/7810094.html" target="_blank" rel="noopener">https://www.cnblogs.com/firstdream/p/7810094.html</a></p>
 
       
 
@@ -1400,15 +818,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">线上排查</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
         			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">JVM</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">安全点</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">安全区域</a>
         		</li>
       		
 		</ul>
@@ -1429,7 +843,549 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2020/08/22/JVM%E4%B9%8B%E5%AE%89%E5%85%A8%E7%82%B9%E5%92%8C%E5%AE%89%E5%85%A8%E5%8C%BA%E5%9F%9F/">展开全文 >></a>
+          <a class="article-more-a" href="/2020/10/26/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA%E5%AE%9A%E4%BD%8D/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-CPU占用100%定位" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/10/26/CPU%E5%8D%A0%E7%94%A8100%25%E5%AE%9A%E4%BD%8D/">CPU占用100%定位</a>
+    </h1>
+  
+
+        
+        <a href="/2020/10/26/CPU%E5%8D%A0%E7%94%A8100%25%E5%AE%9A%E4%BD%8D/" class="archive-article-date">
+  	<time datetime="2020-10-26T15:25:15.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="测试代码"><a href="#测试代码" class="headerlink" title="测试代码"></a>测试代码</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BusyCpu</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</span><br><span class="line">                    result++;</span><br><span class="line">                    <span class="keyword">if</span> (result &gt; Integer.MAX_VALUE / <span class="number">2</span>) &#123;</span><br><span class="line">                        result = <span class="number">0</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    System.out.println(result);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,<span class="string">"TestBusyThread"</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>复制上面的代码生成java文件，拷贝java文件到服务器，通过javac命令生成class文件，运行class文件模拟CPU占用100%问题</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javac -d . BusyCpu.java</span><br><span class="line">nohup java BusyCpu &amp;</span><br></pre></td></tr></table></figure>
+
+<h2 id="top命令找出占用CPU最高的线程"><a href="#top命令找出占用CPU最高的线程" class="headerlink" title="top命令找出占用CPU最高的线程"></a>top命令找出占用CPU最高的线程</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">//按照CPU占用从大到小排序</span><br><span class="line">top -c</span><br><span class="line">//假设占用CPU最高的进程id是4887</span><br><span class="line">//-p指定显示某个进程的信息，-H查看进程的所有线程信息</span><br><span class="line">top -Hp 4887</span><br><span class="line">//假设占用最高的线程id是4899，通过printf命令转换线程id为16进制，结果为1323</span><br><span class="line">printf "%x" 4899</span><br></pre></td></tr></table></figure>
+
+<h2 id="jstack定位问题代码"><a href="#jstack定位问题代码" class="headerlink" title="jstack定位问题代码"></a>jstack定位问题代码</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//打印进程4877的jstack信息到temp.stack文件</span><br><span class="line">jstack 4877 &gt; temp.stack</span><br><span class="line">//通过vi命令打开，搜索nid=1323的线程信息</span><br><span class="line">vi temp.stack</span><br></pre></td></tr></table></figure>
+
+<p><img src="/assets/blogImg/CPU占用100定位_01.png" width="800"></p>
+
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.cnblogs.com/valjeanshaw/p/13124683.html" target="_blank" rel="noopener">https://www.cnblogs.com/valjeanshaw/p/13124683.html</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">线上排查</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">JVM</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">jstack</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/JVM相关//" class="article-tag-list-link color1">JVM相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/10/26/CPU%E5%8D%A0%E7%94%A8100%25%E5%AE%9A%E4%BD%8D/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-CentOS安装MySQL" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/10/26/CentOS%E5%AE%89%E8%A3%85MySQL/">CentOS7安装MySQL</a>
+    </h1>
+  
+
+        
+        <a href="/2020/10/26/CentOS%E5%AE%89%E8%A3%85MySQL/" class="archive-article-date">
+  	<time datetime="2020-10-26T15:19:07.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h2><p>官网：<a href="https://downloads.mysql.com/archives/community/" target="_blank" rel="noopener">https://downloads.mysql.com/archives/community/</a></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><h3 id="解压，重命名，并移动"><a href="#解压，重命名，并移动" class="headerlink" title="解压，重命名，并移动"></a>解压，重命名，并移动</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tar -zxf mysql-5.7.28-linux-glibc2.12-x86_64.tar.gz</span><br><span class="line">mv mysql-5.7.28-linux-glibc2.12-x86_64 mysql</span><br><span class="line">mv mysql /usr/local/</span><br></pre></td></tr></table></figure>
+
+<h3 id="新建data目录，添加用户组与用户，修改目录权限"><a href="#新建data目录，添加用户组与用户，修改目录权限" class="headerlink" title="新建data目录，添加用户组与用户，修改目录权限"></a>新建data目录，添加用户组与用户，修改目录权限</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/mysql</span><br><span class="line">mkdir data</span><br><span class="line">groupadd mysql</span><br><span class="line">//-r 建立系统帐号</span><br><span class="line">//-g&lt;群组&gt; 指定用户所属的群组</span><br><span class="line">useradd -r -g mysql mysql</span><br><span class="line"></span><br><span class="line">chown -R mysql:mysql /usr/local/mysql</span><br></pre></td></tr></table></figure>
+
+<h3 id="安装-1"><a href="#安装-1" class="headerlink" title="安装"></a>安装</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bin/mysqld --initialize --user=mysql --basedir=/usr/local/mysql/ --datadir=/usr/local/mysql/data/</span><br></pre></td></tr></table></figure>
+
+<p>成功的话，显示如下内容：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">2020-10-29T14:37:35.493881Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).</span><br><span class="line">2020-10-29T14:37:35.618572Z 0 [Warning] InnoDB: New log files created, LSN=45790</span><br><span class="line">2020-10-29T14:37:35.642787Z 0 [Warning] InnoDB: Creating foreign key constraint system tables.</span><br><span class="line">2020-10-29T14:37:35.697617Z 0 [Warning] No existing UUID has been found, so we assume that this is the first time that this server has been started. Generating a new UUID: 4946138d-19f4-11eb-b954-000c2984a8f1.</span><br><span class="line">2020-10-29T14:37:35.698411Z 0 [Warning] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.</span><br><span class="line">2020-10-29T14:37:36.151055Z 0 [Warning] CA certificate ca.pem is self signed.</span><br><span class="line">2020-10-29T14:37:36.220758Z 1 [Note] A temporary password is generated for root@localhost: rS+Yd))GM4wP</span><br></pre></td></tr></table></figure>
+
+<p>注意最后一行：<strong>A temporary password is generated for root@localhost: rS+Yd))GM4wP</strong></p>
+<p>由此可知root用户的初始化密码为：rS+Yd))GM4wP</p>
+<h3 id="修改my-cnf文件"><a href="#修改my-cnf文件" class="headerlink" title="修改my.cnf文件"></a>修改my.cnf文件</h3><p>安装完后，会在/etc文件夹下生成my.cnf文件，需要修改几个配置项：datadir，socket，log-error，pid-file</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/my.cnf</span><br></pre></td></tr></table></figure>
+
+<p>原文件内容</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line">datadir=/var/lib/mysql</span><br><span class="line">socket=/var/lib/mysql/mysql.sock</span><br><span class="line"><span class="meta">#</span><span class="bash"> Disabling symbolic-links is recommended to prevent assorted security risks</span></span><br><span class="line">symbolic-links=0</span><br><span class="line"><span class="meta">#</span><span class="bash"> Settings user and group are ignored when systemd is used.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> If you need to run mysqld under a different user or group,</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> customize your systemd unit file <span class="keyword">for</span> mariadb according to the</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> instructions <span class="keyword">in</span> http://fedoraproject.org/wiki/Systemd</span></span><br><span class="line"></span><br><span class="line">[mysqld_safe]</span><br><span class="line">log-error=/var/log/mariadb/mariadb.log</span><br><span class="line">pid-file=/var/run/mariadb/mariadb.pid</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> include all files from the config directory</span></span><br><span class="line"><span class="meta">#</span></span><br><span class="line">!includedir /etc/my.cnf.d</span><br></pre></td></tr></table></figure>
+
+<p>修改后</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[mysqld]</span><br><span class="line">datadir=/usr/local/mysql/data</span><br><span class="line">socket=/tmp/mysql.sock</span><br><span class="line">port=3306</span><br><span class="line"><span class="meta">#</span><span class="bash"> Disabling symbolic-links is recommended to prevent assorted security risks</span></span><br><span class="line">symbolic-links=0</span><br><span class="line"><span class="meta">#</span><span class="bash"> Settings user and group are ignored when systemd is used.</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> If you need to run mysqld under a different user or group,</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> customize your systemd unit file <span class="keyword">for</span> mariadb according to the</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> instructions <span class="keyword">in</span> http://fedoraproject.org/wiki/Systemd</span></span><br><span class="line"></span><br><span class="line">[mysqld_safe]</span><br><span class="line">log-error=/usr/local/mysql/log/mariadb/mariadb.log</span><br><span class="line">pid-file=/usr/local/mysql/run/mysql.pid</span><br><span class="line">user=mysql</span><br><span class="line"><span class="meta">#</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> include all files from the config directory</span></span><br><span class="line"><span class="meta">#</span></span><br><span class="line">!includedir /etc/my.cnf.d</span><br></pre></td></tr></table></figure>
+
+<p>创建/usr/local/mysql/log/mariadb/mariadb.log文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mkdir log</span><br><span class="line">cd log</span><br><span class="line">mkdir mariadb</span><br><span class="line">cd mariadb</span><br><span class="line">touch mariadb.log</span><br></pre></td></tr></table></figure>
+
+<h3 id="拷贝启动脚本"><a href="#拷贝启动脚本" class="headerlink" title="拷贝启动脚本"></a>拷贝启动脚本</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /usr/local/mysql/support-files/mysql.server /etc/init.d/mysqld</span><br></pre></td></tr></table></figure>
+
+<h3 id="启动mysql服务"><a href="#启动mysql服务" class="headerlink" title="启动mysql服务"></a>启动mysql服务</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">service mysqld start</span><br></pre></td></tr></table></figure>
+
+<p>查看是否有mysqld进程</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -ef | grep mysql</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置环境变量，编辑-etc-profile，方便在任何地方用mysql命令"><a href="#配置环境变量，编辑-etc-profile，方便在任何地方用mysql命令" class="headerlink" title="配置环境变量，编辑/etc/profile，方便在任何地方用mysql命令"></a>配置环境变量，编辑/etc/profile，方便在任何地方用mysql命令</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/profile</span><br></pre></td></tr></table></figure>
+
+<p>添加如下内容：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">mysql</span></span><br><span class="line">export MYSQL_HOME=/usr/local/mysql</span><br><span class="line">export PATH=$PATH:$MYSQL_HOME/bin</span><br></pre></td></tr></table></figure>
+
+<p>刷新</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure>
+
+<h3 id="登录mysql，修改密码"><a href="#登录mysql，修改密码" class="headerlink" title="登录mysql，修改密码"></a>登录mysql，修改密码</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysql -uroot -p</span><br><span class="line">alter user 'root'@'localhost' identified by '123456';</span><br><span class="line">flush privileges;</span><br></pre></td></tr></table></figure>
+
+<h3 id="若是想让其他机器访问，需要配置远程访问"><a href="#若是想让其他机器访问，需要配置远程访问" class="headerlink" title="若是想让其他机器访问，需要配置远程访问"></a>若是想让其他机器访问，需要配置远程访问</h3><p>记得打开端口3306</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456' WITH GRANT OPTION;</span><br></pre></td></tr></table></figure>
+
+<h3 id="几个常用命令"><a href="#几个常用命令" class="headerlink" title="几个常用命令"></a>几个常用命令</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">service mysqld start 　　　 #启动</span><br><span class="line">service mysqld stop        #关闭 　　　</span><br><span class="line">service mysqld restart　　  #重启 　　　</span><br><span class="line">service mysqld status 　　  #查看运行状态</span><br></pre></td></tr></table></figure>
+
+<h2 id="配置开机启动"><a href="#配置开机启动" class="headerlink" title="配置开机启动"></a>配置开机启动</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable mysqld</span><br><span class="line">systemctl start mysqld</span><br></pre></td></tr></table></figure>
+
+<h2 id="主从配置"><a href="#主从配置" class="headerlink" title="主从配置"></a>主从配置</h2><h3 id="master的配置"><a href="#master的配置" class="headerlink" title="master的配置"></a>master的配置</h3><p>创建一个数据库testreplica和一个数据表test01用于主从复制</p>
+<p>创建一个用户给<strong>从库</strong>用来同步数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">GRANT REPLICATION SLAVE,FILE ON *.* TO &#39;mstest&#39;@&#39;%&#39; IDENTIFIED BY &#39;123456&#39;;</span><br><span class="line">FLUSH PRIVILEGES;</span><br><span class="line">select user,host from mysql.user;</span><br></pre></td></tr></table></figure>
+
+<p>修改my.cnf配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server-id=1</span><br><span class="line">binlog-do-db=testreplica</span><br><span class="line"><span class="meta">#</span><span class="bash">这个是需要同步的数据库 ，master是一个数据库，自行先创建</span></span><br></pre></td></tr></table></figure>
+
+<p>检查主库状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">show variables like &#39;log-bin%&#39;;</span><br><span class="line">show master status;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/assets/blogImg/CentOS7安装MySQL_01.png" width="800"></p>
+
+<p>可以看到log_bin=ON，即配置成功</p>
+<h3 id="slave的配置"><a href="#slave的配置" class="headerlink" title="slave的配置"></a>slave的配置</h3><p>开启主从复制前需要拷贝主库的数据库和数据表到从库</p>
+<p>修改my.cnf配置文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">server-id=2</span><br><span class="line">replicate-do-db=testreplica</span><br><span class="line"><span class="meta">#</span><span class="bash">replicate-do-db：要同步的mstest数据库,要同步多个数据库，就多加几个replicate-db-db=数据库名</span></span><br></pre></td></tr></table></figure>
+
+<p>配置主从关系</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">change master to master_host&#x3D;&#39;192.168.1.191&#39;, master_user&#x3D;&#39;mstest&#39;, master_password&#x3D;&#39;123456&#39;,master_log_file&#x3D;&#39;mysql-bin.000001&#39;, master_log_pos&#x3D;154;</span><br><span class="line"></span><br><span class="line">start slave;</span><br></pre></td></tr></table></figure>
+
+<p>检查从库状态</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">show slave status;</span><br></pre></td></tr></table></figure>
+
+<p>如果Slave_IO_Running和Slave_SQL_Running都是Yes，则配置成功了。如果其中一个为No，则查看Last_Error的具体失败原因</p>
+<p><img src="/assets/blogImg/CentOS7安装MySQL_02.png" width="2000"></p>
+
+<h3 id="错误解决"><a href="#错误解决" class="headerlink" title="错误解决"></a>错误解决</h3><p>在搭建Mysql主从复制时候，在执行完相关操作以后，通过命令查看是否主从复制成功的时候</p>
+<p>show slave status;</p>
+<p>在“Slave_SQL_Running_State”中出现了“Fatal error: The slave I/O thread stopsbecause master and slave have equal MySQL server UUIDs; these UUIDs must bedifferent for replication to work.”这个错误。<br>当时以为是主节点服务器的UUID和从节点服务器网卡的UUID重复了，经过查看，发现他们并没有重复，然后重启服务器以后发现仍然没有成功。有点摸不着头脑。<br>通过上网搜索。发现原来是Mysql的一个配置文件auto.cnf里面记录了mysql服务器的uuid。</p>
+<p>server_uuid:服务器身份ID。在第一次启动Mysql时，会自动生成一个server_uuid并写入到数据目录下auto.cnf文件里。</p>
+<p>原来是这个uuid和主服务器的uuid重复了。（我是虚拟机环境,为了方便,先装好一台,并且装好MySQL，然后通过colone的方式复制出另外一台），然后经过修改auto.cnf文件中的server-uuid，重启mysql服务器，再查看mysql从节点的状态，恢复正常。</p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.cnblogs.com/qixing/p/12271499.html" target="_blank" rel="noopener">https://www.cnblogs.com/qixing/p/12271499.html</a></p>
+<p>错误解决</p>
+<p><a href="https://www.cnblogs.com/chinesern/p/7698424.html" target="_blank" rel="noopener">https://www.cnblogs.com/chinesern/p/7698424.html</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">安装</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/软件安装教程//" class="article-tag-list-link color2">软件安装教程</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/10/26/CentOS%E5%AE%89%E8%A3%85MySQL/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-NIO浅析" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/10/26/NIO%E6%B5%85%E6%9E%90/">NIO浅析</a>
+    </h1>
+  
+
+        
+        <a href="/2020/10/26/NIO%E6%B5%85%E6%9E%90/" class="archive-article-date">
+  	<time datetime="2020-10-26T15:16:27.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://tech.meituan.com/2016/11/04/nio.html" target="_blank" rel="noopener">https://tech.meituan.com/2016/11/04/nio.html</a></p>
+<p><a href="https://www.jianshu.com/p/5bb812ca5f8e" target="_blank" rel="noopener">https://www.jianshu.com/p/5bb812ca5f8e</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">NIO</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">IO</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/NIO相关//" class="article-tag-list-link color1">NIO相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/10/26/NIO%E6%B5%85%E6%9E%90/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-锁的升级与对比" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/10/26/%E9%94%81%E7%9A%84%E5%8D%87%E7%BA%A7%E4%B8%8E%E5%AF%B9%E6%AF%94/">锁的升级与对比</a>
+    </h1>
+  
+
+        
+        <a href="/2020/10/26/%E9%94%81%E7%9A%84%E5%8D%87%E7%BA%A7%E4%B8%8E%E5%AF%B9%E6%AF%94/" class="archive-article-date">
+  	<time datetime="2020-10-26T15:06:10.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">偏向锁</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">轻量级锁</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">重量级锁</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/并发编程相关//" class="article-tag-list-link color2">并发编程相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/10/26/%E9%94%81%E7%9A%84%E5%8D%87%E7%BA%A7%E4%B8%8E%E5%AF%B9%E6%AF%94/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-阻塞队列BlockingQueue" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2020/10/26/%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97BlockingQueue/">阻塞队列BlockingQueue</a>
+    </h1>
+  
+
+        
+        <a href="/2020/10/26/%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97BlockingQueue/" class="archive-article-date">
+  	<time datetime="2020-10-26T15:03:26.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-10-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a href="https://www.jianshu.com/p/32665a52eba1" target="_blank" rel="noopener">https://www.jianshu.com/p/32665a52eba1</a></p>
+<p><a href="https://blog.csdn.net/chenchaofuck1/article/details/51660119" target="_blank" rel="noopener">https://blog.csdn.net/chenchaofuck1/article/details/51660119</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">阻塞队列</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+		<i class="icon-book icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="/categories/并发编程相关//" class="article-tag-list-link color2">并发编程相关</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2020/10/26/%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97BlockingQueue/">展开全文 >></a>
         </p>
       
 
@@ -1461,7 +1417,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><a class="extend next" rel="next" href="/page/5/">Next &amp;raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><a class="extend next" rel="next" href="/page/5/">Next &amp;raquo;</a>
     </nav>
   
 
@@ -1548,23 +1504,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">线上排查</a>
+                <a href="javascript:void(0)" class="js-tag color1">Nginx</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">JVM</a>
+                <a href="javascript:void(0)" class="js-tag color2">CentOS</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">jstack</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Kafka</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">安装</a>
+                <a href="javascript:void(0)" class="js-tag color1">[object Object]</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1580,6 +1528,26 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">线上排查</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">JVM</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">jstack</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">linux</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">CentOS7</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">Linux</a>
               </li>
              
@@ -1592,35 +1560,31 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">linux</a>
+                <a href="javascript:void(0)" class="js-tag color1">Kafka</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">CentOS7</a>
+                <a href="javascript:void(0)" class="js-tag color3">安装</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">redis</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Spring</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">注解</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">import</a>
+                <a href="javascript:void(0)" class="js-tag color4">RabbitMQ</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">类文件结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">垃圾回收算法</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">虚拟机</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">运行时数据区域</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1632,19 +1596,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">QPS</a>
+                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">TPS</a>
+                <a href="javascript:void(0)" class="js-tag color2">Docker</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">JMeter</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">垃圾回收算法</a>
+                <a href="javascript:void(0)" class="js-tag color1">redis</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1660,11 +1620,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">虚拟机</a>
+                <a href="javascript:void(0)" class="js-tag color5">CountDownLatch</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">运行时数据区域</a>
+                <a href="javascript:void(0)" class="js-tag color4">CyclicBarrier</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">Semaphore</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1676,11 +1640,59 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">垃圾回收</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Spring</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">注解</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">import</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">explain</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">执行计划</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">QPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">TPS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">JMeter</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">分区</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">分表</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">基本数据类型</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">引用数据类型</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">慢查询</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1696,31 +1708,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">基本数据类型</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">引用数据类型</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">主从复制</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">datetime</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">timestamp</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">explain</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">执行计划</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1732,7 +1720,27 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
+                <a href="javascript:void(0)" class="js-tag color3">锁表</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">datetime</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">timestamp</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">一致性</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">Paxos</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">哨兵</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1744,6 +1752,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">异步消息队列</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">NIO</a>
               </li>
              
@@ -1752,11 +1764,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">异步消息队列</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">哨兵</a>
+                <a href="javascript:void(0)" class="js-tag color1">SQL优化</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1764,19 +1772,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">TCP</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">三次握手</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">四次握手</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">SQL优化</a>
+                <a href="javascript:void(0)" class="js-tag color5">分布式锁</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1788,6 +1784,26 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">char</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">varchar</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">nvarchar</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">统一异常处理</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">final</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">入门教程</a>
               </li>
              
@@ -1796,7 +1812,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">final</a>
+                <a href="javascript:void(0)" class="js-tag color5">http</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1824,23 +1840,23 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">char</a>
+                <a href="javascript:void(0)" class="js-tag color4">TCP</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">varchar</a>
+                <a href="javascript:void(0)" class="js-tag color3">粘包</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">nvarchar</a>
+                <a href="javascript:void(0)" class="js-tag color1">sleep</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">线程安全</a>
+                <a href="javascript:void(0)" class="js-tag color5">wait</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">锁优化</a>
+                <a href="javascript:void(0)" class="js-tag color3">线程</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1864,19 +1880,47 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">sleep</a>
+                <a href="javascript:void(0)" class="js-tag color4">微服务</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">wait</a>
+                <a href="javascript:void(0)" class="js-tag color2">树</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">线程</a>
+                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">http</a>
+                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">索引</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">线程安全</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">锁优化</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">设计模式</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">单例</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">可重入锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">分库分表</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1888,27 +1932,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">可重入锁</a>
+                <a href="javascript:void(0)" class="js-tag color4">top</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">微服务</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">消息队列</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">设计模式</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">单例</a>
+                <a href="javascript:void(0)" class="js-tag color5">free</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1924,31 +1952,27 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">偏向锁</a>
+                <a href="javascript:void(0)" class="js-tag color4">isInterrupted</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">轻量级锁</a>
+                <a href="javascript:void(0)" class="js-tag color2">interrupted</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">重量级锁</a>
+                <a href="javascript:void(0)" class="js-tag color2">JSR303</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">top</a>
+                <a href="javascript:void(0)" class="js-tag color1">分布式事务</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">free</a>
+                <a href="javascript:void(0)" class="js-tag color5">消息队列</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">二叉树</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">树</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -1964,14 +1988,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">红黑树</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">数据结构</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">缓存穿透</a>
               </li>
              
@@ -1984,6 +2000,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color3">缓存</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">数据库</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">MVCC</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">SpringBoot</a>
               </li>
              
@@ -1992,7 +2020,27 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">偏向锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">轻量级锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">重量级锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">阻塞队列</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">OSS</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -2020,11 +2068,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">索引</a>
+                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color3">BTree索引</a>
+                <a href="javascript:void(0)" class="js-tag color3">死锁</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">三次握手</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">四次挥手</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -2048,6 +2104,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">ThreadLocal</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">SpringCloud</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">两阶段提交</a>
               </li>
              
@@ -2060,11 +2124,23 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">事务传播行为</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Stream</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">HashMap</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">Hashtable</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">类加载</a>
               </li>
              
               <li class="article-tag-list-item">
